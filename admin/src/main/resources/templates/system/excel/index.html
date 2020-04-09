@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-title" content="Full Spreadsheet"/>
+    <title>SpreadJS - Samples</title>
+
+    <!-- SpreadJS语言设置（1）-->
+    <meta name="spreadjs culture" content="zh-cn"/>
+
+    <link href="http://cdn.grapecity.com/spreadjs/hosted/css/gc.spread.sheets.excel20
+13white.10.3.1.css" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="http://cdn.grapecity.com/spreadjs/hosted/script
+s/gc.spread.sheets.all.10.3.1.min.js"></script>
+    <script type="text/javascript" src="http://cdn.grapecity.com/spreadjs/hosted/script
+s/interop/gc.spread.excelio.10.3.1.min.js"></script>
+</head>
+
+<body class="unselectable">
+<input type="file" name="files[]" id="fileDemo" accept=".xlsx,.xls" />
+<input type="button" id="loadExcel" value="Import" onclick="ImportFileStart()" />
+<div id="sheetSelection" style="display:none;">
+    <p style="display:inline">Select sheet to load: </p>
+    <select id="sheetSelect" style="display:inline"></select>
+</div>
+
+
+
+
+<div id="hiddenWorkbook" style="display:none; width: 800px; height: 600px; border: 1px solid gray"></div>
+<div id="ss" style="width: 800px; height: 600px; border: 1px solid gray"></div>
+
+
+<script>
+    var hiddenWorkbook, excelIO, spread;
+    window.onload = function () {
+        excelIO = new GC.Spread.Excel.IO();
+        hiddenWorkbook = new GC.Spread.Sheets.Workbook(document.getElementById
+        ("hiddenWorkbook"));
+        spread = new GC.Spread.Sheets.Workbook(document.getElementById("ss"));
+    }
+    CreateSheetSelect();
+
+    function ImportFileStart() {
+        var excelFile = document.getElementById("fileDemo").files[0];
+        excelIO.open(excelFile, function (json) {
+            var workbookObj = json;
+            hiddenWorkbook.fromJSON(workbookObj);
+        }, function (e) {
+
+        });
+    }
+    function CreateSheetSelect() {
+        var sheetSelectionDiv = document.getElementById('sheetSelection');
+        sheetSelectionDiv.style.display = "inline";
+        var dropDown = document.getElementById('sheetSelect');
+        for (var s = 0; s < hiddenWorkbook.getSheetCount(); s++) {
+            dropDown.options[dropDown.options.length] = new Option(hiddenWorkbook.sheets[s].name(), s);
+        }
+    }
+
+</script>
+
+</body>
+
+</html>

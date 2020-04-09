@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/static/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+</head>
+<body>
+<div class="layui-form timo-compile">
+        <div class="layui-form-item" >
+            <input type="hidden" name="bidSectionId" th:if="${bidSectionId}" th:value="${bidSectionId}"/>
+            <div class="layui-input-inline">
+                <input class="layui-input" id="startTime" name="startTime" autocomplete="off" placeholder="开始时间"
+                       lay-key="1" height="20px"style="margin-left: 30px">
+            </div>
+            <div class="layui-input-inline">
+                <input class="layui-input" id="endTime" name="endTime" autocomplete="off" placeholder="结束时间" lay-key="2"
+                       height="20px">
+            </div>
+            <a class="layui-btn " id="submission" data-type="query" data-form="queryForm">导出</a>
+        </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script type="text/javascript" th:src="@{/static/js/plugins/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/timoTree.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/addMenu.js}"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery,
+            laydate = layui.laydate,
+            startTime, endTime;
+        laydate.render({
+            id: "startTime", elem: "#startTime", trigger: 'click', done: function (value, date) {
+                startTime = value;
+            }
+        });
+        laydate.render({
+            id: "endTime", elem: "#endTime",
+            trigger: 'click', done: function (value, date) {
+                endTime = value;
+            }
+        });
+
+        var id = layui.jquery('input[name= bidSectionId]').val();
+
+        $(document).on('click', '#submission', function () {
+            if (id === undefined || id === null || id === '' || id.length == 0) {
+                layer.msg("数据异常");
+            } else {
+                if(startTime === undefined || startTime === null || startTime === '' || endTime === undefined || endTime === null || endTime === ''){
+                    layer.msg('请选择开始时间和结束时间');
+                    return;
+                }else{
+                    window.location.href = "/system/bidSection/exportExcel?bidSectionId=" + id + '&startTime=' + startTime + '&endTime=' + endTime;
+                }
+            }
+        });
+    });
+</script>
+
+
+
+</body>
+</html>

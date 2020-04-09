@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+
+    <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/menu/saveBidSection}">
+        <div class="layui-form-item">
+            <label class="layui-form-label ">模板名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="templateName">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">备注</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="remarks">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <button type="button" class="layui-btn layui-btn-normal" id="upload" style="margin-left: 20px">选择文件</button>
+        </div>
+        <div class="layui-form-item timo-finally ">
+            <button type="button" class="layui-btn" id="up">开始上传</button>
+            <button class="layui-btn btn-secondary close-popup">
+                <i class="fa fa-times-circle"></i>
+                关闭
+            </button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table', 'upload'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery,
+            laydate = layui.laydate,
+            upload = layui.upload;
+
+
+        upload.render({
+            elem: '#upload'//绑定的元素
+            , url: '/system/report/uploadTemplate'//提交的url
+            , auto: false //是否自动上传
+            , accept: "file"   //指定允许上传的文件类型
+            //,multiple: true
+            , bindAction: '#up' //选完文件后不自动上传
+            ,
+            before: function (obj) {
+                this.data = {
+                    'name': layui.jquery('input[name= templateName]').val(),
+                    'remarks': layui.jquery('input[name= remarks]').val()
+                };//关键代码
+            }
+            , done: function (res) {
+                if (res.code != 200) {
+                    return layer.msg('上传失败');
+                } else {
+
+
+                    layer.msg("上传成功！", {
+                        icon: 1,
+                        time: 3000,
+                        end: function () {
+                            window.parent.location.reload();//刷新父页面
+                            var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                            parent.layer.close(index);
+                        }
+                    });
+
+
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/menu/saveLineInfo}">
+       <!-- <input type="hidden" name="id" th:if="${lineMenu}" th:value="${lineMenu.id}"/>
+        <input type="hidden" name="pid" th:if="${pMenu}" th:value="${pMenu.id}"/>-->
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">线路名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="name"  placeholder="请输入线路名称" th:value="${lineMenu?.name}">
+            </div>
+
+            <label class="layui-form-label required">线路编码</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="No"  placeholder="" th:value="${lineMenu?.No}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">起始里程</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="startMileage"  placeholder="" th:value="${lineMenu?.startMileage}">
+            </div>
+            <label class="layui-form-label required">结束里程</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="endMileage"  placeholder="" th:value="${lineMenu?.endMileage}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">建设单位</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="buildCompany"  placeholder="" th:value="${lineMenu?.buildCompany}">
+            </div>
+            <label class="layui-form-label required">设计单位</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="designCompany"  placeholder="" th:value="${lineMenu?.designCompany}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">线路概况</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="lineSurvey"  placeholder="" th:value="${lineMenu?.lineSurvey}">
+            </div>
+            <label class="layui-form-label required">备注</label>
+            <div class="layui-input-inline">
+                <input class="layui-input url-input" type="text" name="remarks"  placeholder="" th:value="${lineMenu?.lineSurvey}">
+            </div>
+        </div>
+        <div class="layui-form-item timo-finally">
+            <button class="layui-btn ajax-submit"><i class="fa fa-check-circle"></i> 保存</button>
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+<script type="text/javascript" th:src="@{/js/addMenu.js}"></script>
+</body>
+</html>

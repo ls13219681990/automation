@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body>
+<div class="timo-detail-page">
+    <input type="hidden" name="nodeName" th:if="${nodeName}" th:value="${nodeName}"/>
+    <table id="acquisitionTable" lay-filter="test"></table>
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container">
+        </div>
+    </script>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        var data = layui.jquery('input[name= nodeName]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+//执行渲染
+            table.render({
+                elem: '#acquisitionTable',
+                method: 'get',
+                height: 'full-50', //屏幕高度-合适的高度
+                width: 800,  //宽度
+                url: '/system/measuringSpot/SensorData?nodeName=' + data,  //数据地址
+                page: true,
+                limits: [10, 20, 50, 100, 200, 500, 1000],
+                loading: true,
+                toolbar: '#toolbarDemo',
+                cols:
+                    [
+                        [
+                            {type: 'checkbox'},
+                            {field: '', type: 'numbers', title: '序号', width: 150,align:'center'},
+                            {field: 'sensorNo', title: '传感器编号', width: 150,align:'center', sort: true},
+                            {field: 'primitiveData', title: '原始值', width: 150,align:'center', sort: true},
+                            {field: 'data', title: '计算值', width: 150,align:'center', sort: true},
+                            {field: 'receiveTime', title: '接收时间', width: 200,align:'center', sort: true},
+                        ]
+                    ],id: 'acquisitionTable', done: function (res) {
+                    tdTitle();
+                }
+            });
+        }
+    });
+
+</script>
+
+
+</body>
+</html>

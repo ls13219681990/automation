@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<style>
+    .layui-table-view .layui-form-radio {
+        margin-right: 20px;
+        margin-left: 20px
+    }
+
+</style>
+<body>
+<div class="timo-detail-page">
+    <input type="hidden" name="id" th:if="${measuringSpot}" th:value="${measuringSpot.id}" id="id"/>
+
+    <!--<div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 测点数据</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>-->
+    <div class="timo-detail-page">
+
+        <div class="layui-form-item">
+
+            <div class="layui-input-inline">
+                <input class="layui-input" id="startTime" name="startTime" autocomplete="off" placeholder="开始时间"
+                       lay-key="1" height="20px">
+            </div>
+            <div class="layui-input-inline">
+                <input class="layui-input" id="endTime" name="endTime" autocomplete="off" placeholder="结束时间" lay-key="2"
+                       height="20px">
+            </div>
+            <a class="layui-btn " id="submission" data-type="query" data-form="queryForm">导出</a>
+            <div class="pull-right screen-btn-group">
+
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="timeInterval" name="startTime" autocomplete="off" placeholder="时间区间"
+                           lay-key="3" height="20px">
+                </div>
+                <button class="layui-btn" data-title="图形数据" id="toEcharts"
+                        th:attr="data-url=@{/system/measuringSpot/toEcharts}" data-size="1000,600">
+                    查看图形数据
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <table id="acquisitionTable" lay-filter="acquisitionTable"></table>
+
+
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container">
+
+            <button class="layui-btn layui-btn-sm" lay-event="dataAlignment">数据对齐</button>
+            <button class="layui-btn layui-btn-sm" lay-event="btnRefresh"><i class="layui-icon">&#xe666;</i></button>
+
+            <input class="margin" type="radio" name="flag" value="1" lay-filter="erweima" title="底部起算" checked="" >
+            <input class="margin" type="radio" name="flag" value="2" lay-filter="erweima" title="头部起算" >
+
+
+            <!-- <button class="layui-btn open-popup" data-title="查看分组数据" lay-event="getCheckData"
+                     th:attr="data-url=@{'/system/measuringSpot/sensorGroupData?nodeName='+${nodeName}}"
+                     data-size="900,400">
+                 查看分组数据
+             </button>-->
+            <!--<button class="layui-btn layui-btn-small" id="exp" data-type="exp" lay-event="getCheckData">
+                <i class="layui-icon">&#xe61e;</i>导出Excel
+            </button>-->
+        </div>
+    </script>
+</div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+        var data = layui.jquery('input[name= id]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+//执行渲染
+            table.render({
+                elem: '#acquisitionTable',
+                method: 'get',
+
+                defaultToolbar: [],
+                //height: 'full-50', //屏幕高度-合适的高度
+                page: true,
+
+                url: '/system/measuringSpot/sensorDatasGroup?nodeId=' + data,  //数据地址
+                toolbar: '#toolbarDemo',
+                cols:
+                    [
+                        [
+                            {type: 'checkbox'},
+                            {field: 'measuringSpotSensorNo', title: '传感器编号', width: '20%', align: 'center', sort: true},
+                            {field: 'measuringSpotOriginalValue', title: '传感器读数', width: '20%', align: 'center', sort: true},
+                            {field: 'measuringSpotOriginalValue', title: '本次变形量', width: '20%', align: 'center', sort: true},
+                            {field: 'measuringSpotOriginalValue', title: '累计变形量', width: '20%', align: 'center', sort: true},
+                            {field: 'receiveTime', title: '接收时间', width: '20%', sort: 'true',align:'center', sort: true},
+                        ]
+                    ], id: 'testReload', done: function (res) {
+                    tdTitle();
+                }
+            });
+
+
+            form.on('radio(erweima)', function (data) {
+                if (data.value == 2) {
+                    layer.prompt(function (value, index, elem) {
+                        alert(value); //得到value
+                        layer.msg(index);
+                    });
+                } else {
+                    layer.msg(11111);
+                }
+            })
+
+
+            //头工具栏事件
+            table.on('toolbar(acquisitionTable)', function (obj) {
+                var id = layui.jquery('input[name= id]').val();
+                if (id === undefined || id === null || id === '' || id.length == 0) {
+                    layer.msg("数据异常");
+                } else {
+                    var checkStatus = table.checkStatus(obj.config.id);
+                    switch (obj.event) {
+                        case 'dataAlignment':
+                            var data = checkStatus.data;
+                            if (data.length <= 0) {
+                                layer.msg('请选择一条或者多条数据');
+                            } else {
+                                console.log(data);
+                                console.log(JSON.stringify(data));
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/system/measuringSpot/dataAlignment',
+                                    dataType: "JSON",
+                                    data: JSON.stringify(data),
+                                    contentType: "application/json;charset=UTF-8",
+                                    success: function (result) {
+                                        $.fn.Messager(result);
+                                    }
+                                });
+                                break
+                            }
+                        case 'btnRefresh':
+                            table.reload('testReload', {
+                                page: {
+                                    curr: 1 //重新从第 1 页开始
+                                }
+                            }, 'data');
+                            break;
+                        case 'calculationMethod':
+                            layer.msg('111111111111111111111111111111111111')
+                    }
+                    ;
+                }
+            });
+        }
+    });
+</script>
+
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery,
+            laydate = layui.laydate,
+            startTime, timeInterval, endTime, measuringSpotId = $('#id').val();
+
+        var id = layui.jquery('input[name= id]').val();
+
+
+        laydate.render({
+            id: "startTime", elem: "#startTime", trigger: 'click', done: function (value, date) {
+                startTime = value;
+            }
+        });
+        laydate.render({
+            id: "endTime", elem: "#endTime",
+            trigger: 'click', done: function (value, date) {
+                endTime = value;
+            }
+        });
+
+        laydate.render({
+            id: 'timeInterval',
+            elem: '#timeInterval'
+            , range: true,
+            trigger: 'click', done: function (value, date) {
+                timeInterval = value;
+            }
+        });
+
+
+        $(document).on('click', '#toEcharts', function () {
+            if (timeInterval == null) {
+                timeInterval = "";
+            }
+            if (id === undefined || id === null || id === '' || id.length == 0) {
+                layer.msg("数据异常");
+            } else {
+                layer.open({
+                    type: 2,
+                    title: '测点折线图',
+                    shadeClose: true,
+                    maxmin: true,
+                    area: ['1000px', '600px'],
+                    content: ['/system/measuringSpot/toEcharts?time=' + timeInterval + '&id=' + id, 'no'] //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                });
+            }
+        });
+        $(document).on('click', '#submission', function () {
+            if (measuringSpotId === undefined || measuringSpotId === null || measuringSpotId === '' || measuringSpotId.length == 0) {
+                layer.msg("数据异常");
+            } else {
+                if (startTime === undefined || startTime === null || startTime === '' || endTime === undefined || endTime === null || endTime === '') {
+                    layer.msg('请选择开始时间和结束时间');
+                    return;
+                } else {
+                    window.location.href = "exportExcel?measuringSpotId=" + measuringSpotId + '&startTime=' + startTime + '&endTime=' + endTime;
+                }
+            }
+        });
+    });
+
+</script>
+<script id="measuringSpotValue" type="text/html">
+    {{#  if(d.measuringSpotValue ==0){}}
+    0.00
+    {{#  } else { }}
+    {{d.measuringSpotValue}}
+    {{#  } }}
+</script>
+<script id="measuringSpotDifference" type="text/html">
+    {{#  if(d.measuringSpotDifference==0){}}
+    0.00
+    {{#  } else { }}
+    {{d.measuringSpotDifference}}
+    {{#  } }}
+</script>
+<script id="dayRateValue" type="text/html">
+    {{#  if(d.dayRateValue==0){}}
+    0.00
+    {{#  } else { }}
+    {{d.dayRateValue}}
+    {{#  } }}
+</script>
+<script id="measuringSpotAccumulationValue" type="text/html">
+    {{#  if(d.measuringSpotAccumulationValue==0){ }}
+    0.00
+    {{#  } else { }}
+    {{d.measuringSpotAccumulationValue}}
+    {{#  } }}
+</script>
+
+
+</body>
+</html>

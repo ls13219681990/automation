@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 358px;
+            height: 130px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .dict-value:hover,
+        .dict-value:hover .control {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .control {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .dict-value .control button {
+            margin: 0;
+            border-color: #ffffff;
+        }
+
+        .dict-value .control button:hover {
+            border-color: #888888;
+        }
+
+        .dict-value .control button .fa {
+            margin-right: 4px;
+            color: #888888;
+        }
+
+        .dict-value .control .field-order .fa {
+            margin: 0;
+        }
+
+        .dict-value .control .field-order.active {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .content {
+            height: 95px;
+            padding: 2px 0;
+            overflow: auto;
+        }
+
+        .dict-value .content .dict-option {
+            margin: 0;
+            padding: 2px 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-indent: 4px;
+            font-size: 14px;
+        }
+
+        .dict-value .content .dict-option:hover {
+            background-color: rgba(1, 170, 237, 0.17);
+        }
+
+        .dict-value .content .dict-option.active {
+            background-color: rgba(1, 170, 237, 0.37);
+            font-weight: bold;
+        }
+
+        .dict-value .content .dict-option.error {
+            background-color: rgba(255, 16, 0, 0.41);
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/acquisitionInstrument/saveAcquisition}" method="get">
+
+        <input type="hidden" name="id" th:if="${cquisitionId}" th:value="${cquisitionId}"/>
+        <input type="hidden" name="passagewayNumber" th:if="${passagewayNumber}" th:value="${passagewayNumber}"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">选择传感器</label>
+            <div class="layui-inline">
+                <select name="sensorNo" id="xm" lay-verify="required" lay-filter="xmFilter" lay-search>
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+
+
+        <div class="layui-form-item timo-finally " style="text-align:right">
+            <button class="layui-btn ajax-submit"><i class="fa fa-check-circle"></i> 提交</button>
+            <button class="layui-btn" id="close"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+
+
+<script th:replace="/common/template :: script"></script>
+
+<script>
+
+    layui.use(['form', 'upload', 'layer'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+
+        $(document).on("click", "#close", function () {
+            var index=parent.layer.getFrameIndex(window.name); //获取当前窗口的name
+            parent.layer.close(index);
+        });
+
+
+        $.ajax({
+            url: "/system/sensor/findAll" ,
+            success: function (data) {
+                if (data != "null") {
+
+                    $.each(data, function (index, item) {
+                        $('#xm').append(new Option(item.no, item.no));// 下拉菜单里添加元素
+                    });
+                    layui.form.render("select");
+                }
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

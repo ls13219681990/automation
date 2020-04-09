@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <i class="fa fa-bars"></i><span id="title" style="margin-left: 10px"></span>
+
+        <div class="pull-right screen-btn-group">
+            <button class="layui-btn  add-workSpot"   style="margin-right: 40px"data-title="添加工点" th:attr="data-url=@{/system/menu/addWorkSpot}" data-size="770,340"><i class="fa fa-plus"></i> 添加工点</button>
+        </div>
+        <i class="layui-icon layui-icon-refresh refresh-btn" ></i>
+    </div>
+
+    <div class="timo-table-wrap">
+        <input type="hidden" name="bidSectionId" th:if="${bidSection}" th:value="${bidSection.id}"/>
+        <div class="timo-detail-page">
+            <table class="layui-table" id="userBidSection" lay-filter="userBidSection"></table>
+            <script id="titleTpl" type="text/html">
+                <a class="open-popup" data-title="编辑工点" th:attr="data-url=@{'/system/menu/workSpotEdit?id={{d.id}}&tree=false'}" data-size="814,400" href="#">编辑</a>
+                <a class="open-popup" data-title="分配采集仪" th:attr="data-url=@{'/system/workSpot/addCollection/{{d.id}}'}" data-size="853,580" href="#">分配采集仪</a>
+            </script>
+        </div>
+    </div>
+
+</div>
+</div>
+</body>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        var bidSectionId = layui.jquery('input[name= bidSectionId]').val();
+
+        table.render({
+            elem: '#userBidSection',
+            method: 'get',
+            //屏幕高度-合适的高度
+            /*page: true,*/
+            loading: true,
+            cellMinWidth: 90, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            url: '/system/workSpot/userWorkSpotData?bidSectionId='+bidSectionId,  //数据地址
+            autoSort: true,
+
+            maxWidth: 300,
+            cols:
+                [
+                    [
+                        {field: 'name', title: '工点名称', width: '12%',align:'center', sort: true},
+                        {field: 'no', title: '工点编码', width: '12%',align:'center', sort: true},
+                        {field: 'startMileage', title: '起始里程', width: '12%',align:'center', sort: true},
+                        {field: 'endMileage', title: '结束里程', width: '12%',align:'center', sort: true},
+                        {field: 'workSpotType', title: '工点类型', width: '12%',align:'center', sort: true},
+                        {field: 'workSpotSurvey', title: '工点概况', width: '12%',align:'center'},
+                        {field: 'remarks', title: '备注', width: '12%',align:'center'},
+                        {field: '', title: '操作', width: '16%', templet: '#titleTpl',align:'center'}
+                    ]
+                ],id: 'userBidSection', done: function (res) {
+                tdTitle();
+            }
+        });
+
+        $.ajax({
+            url: "/system/bidSection/title?id="+bidSectionId ,
+            success: function (value) {
+                document.getElementById ("title").innerHTML = value.msg;
+            }
+        });
+
+
+        /* 添加/修改弹出层 */
+        $(document).on("click", ".add-workSpot", function () {
+
+            var title = $(this).attr("data-title");
+            var url = $(this).attr("data-url");
+            var size = $(this).attr("data-size");
+
+            if (size === undefined || size === "auto") {
+                size = ['50%', '80%'];
+            }else if (size === "max") {
+                size = ['100%', '100%'];
+            }else if (size.indexOf(',') !== -1) {
+                var split = size.split(",");
+                size = [split[0] + 'px', split[1] + 'px'];
+            }
+            window.layerIndex = layer.open({
+                type: 2,
+                title: title,
+                shadeClose: true,
+                maxmin: true,
+                area: size,
+                content: [url+'?id='+bidSectionId+'&tree=false', 'on']
+            });
+
+        });
+
+    });
+
+</script>
+</body>
+</html>

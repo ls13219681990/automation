@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html id="all">
+<head lang="en">
+    <meta charset="utf-8">
+    <title>html导出生成word文档</title>
+    <link rel="stylesheet" th:href="@{/layui2.55/css/layui.css}" media="all">
+    <style>
+        .sm10 {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sm7 {
+            width: 83%;
+            height: 100%;
+            float: right;
+        }
+
+        .sm3 {
+            width: 16%;
+            height: 100%;
+            float: left;
+        }
+
+        .table-c {
+            margin: 0 auto;
+            text-align: center;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<!--
+<a type="button" class="layui-btn" href="/system/temperatureResistance/downTemplate"><i class="layui-icon"></i>导出模板</a>-->
+
+<input type="hidden" id="templateId" name="templateId" th:if="${templateId}" th:value="${templateId}"/>
+<div id="remove" style="height: 140px;text-align:center;border:1px solid #91A19F;line-height: 140px ">
+    <button class="layui-btn" id="workSpot" style="margin-right: 50px">选择工点</button>
+    <button class="layui-btn" id="measuringSpot" style="margin-right: 50px">选择测点</button>
+
+    <div class="layui-input-inline">
+        <input class="layui-input" id="startTime" name="startTime" autocomplete="off" placeholder="开始时间"
+               lay-key="1" height="20px" style="margin-left: 30px">
+    </div>
+    <div class="layui-input-inline">
+        <input class="layui-input" id="endTime" name="endTime" autocomplete="off" placeholder="结束时间" lay-key="2"
+               height="20px" style="margin-left: 50px">
+    </div>
+
+    <input class="layui-btn" type="button" value="保存文档" style="margin-left: 150px">
+</div>
+
+<div id="content"></div>
+
+<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script th:src="@{/layui2.55/layui.js}" charset="utf-8"></script>
+<script th:src="@{/lib/jQuery-Word-Export/fileSaver.js}" charset="utf-8"></script>
+<script th:src="@{/lib/jQuery-Word-Export/jquery.wordexport.js}" charset="utf-8"></script>
+
+<script>
+
+    var treeData; //存子窗口传回来的数据
+    var list = new Array();
+    /*var hashMap = new Map();*/
+    var hashMap = {};
+    var workSpotId = 0;
+    var pictureList = [];
+    var date = 0;
+    var dateType = "";
+    var startTime = "";
+    var endTime = "";
+
+    // 选择图片显示
+    function imgChange(obj) {
+
+        var fileId = obj.id;
+        var num = fileId.replace(/[^0-9]/ig, "");
+
+        var formData = new FormData();
+        formData.append("file", document.getElementById(fileId).files[0]);
+        $.ajax({
+            url: "/system/report/uploadImg.xhtml",
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                if (data.status == "true") {
+                    alert("上传成功！");
+                }
+            }
+        });
+        //获取点击的文本框
+        var file = document.getElementById(fileId);
+        var name = file.files[0].name;
+        var imgUrl = window.URL.createObjectURL(file.files[0]);
+        document.getElementById('imghead' + num + '').setAttribute('fileName', name);
+        var img = document.getElementById('imghead' + num + '');
+        img.setAttribute('src', imgUrl); // 修改img标签src属性值
+        // img.$("#file").hide();
+    };
+
+    function getHeadInfo(obj, type) {
+        var headInfo = "";
+
+
+        if (type == "建筑物倾斜" || type == "管线沉降(右线)" || type == "围墙沉降(左线)" || type == "桥墩倾斜") {
+            headInfo = '<table   border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="7">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="3">' + obj.constructionCompany + '</td><td colspan="2">检测项目</td><td colspan="2" style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="3">' + obj.supervisorCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td colspan="2">' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="3">' + obj.instrumentSpecifications + '</td> <td colspan="2">本' + dateType + '观测日期</td><td colspan="2">' + obj.thisTimeDate + '</td></tr>';
+
+        } else if (type == "建筑物沉降" || type == "锚索应力" || type == "桩顶沉降") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td colspan="2">工程名称</td><td colspan="6">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td colspan="2">施工单位</td><td colspan="3">' + obj.constructionCompany + '</td><td colspan="2">检测项目</td><td  style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td colspan="2">监理单位</td><td colspan="3">' + obj.supervisorCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td >' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td colspan="2">仪器规格</td><td colspan="3">' + obj.instrumentSpecifications + '</td> <td colspan="2">本' + dateType + '观测日期</td><td >' + obj.thisTimeDate + '</td></tr>';
+        } else if (type == "管线沉降(左线)") {
+
+        } else if (type == "地表沉降(左线)") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="8">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="4">' + obj.constructionCompany + '</td><td >检测项目</td><td colspan="3" style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="4">' + obj.supervisorCompany + '</td><td >上' + dateType + '观测日期</td><td colspan="3">' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="4">' + obj.instrumentSpecifications + '</td> <td >本' + dateType + '观测日期</td><td colspan="3">' + obj.thisTimeDate + '</td></tr>';
+
+        } else if (type == "拱顶沉降") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="7">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="4">' + obj.constructionCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td  style="color:red;">' + obj.lastTimeDate + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="4">' + obj.supervisorCompany + '</td><td colspan="2">本' + dateType + '观测日期</td><td  style="color:red;">' + obj.thisTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="4">' + obj.instrumentSpecifications + '</td> <td colspan="2">设备管理号</td><td >' + '不知道哪里取' + '</td></tr>';
+        } else if (type == "管片沉降") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="7">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="4">' + obj.constructionCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td  style="color:red;">' + obj.lastTimeDate + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="4">' + obj.supervisorCompany + '</td><td colspan="2">本' + dateType + '观测日期</td><td  style="color:red;">' + obj.thisTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="4">' + obj.instrumentSpecifications + '</td> <td colspan="2">设备管理号</td><td >' + '不知道哪里取' + '</td></tr>';
+        } else if (type == "分层沉降(左线)") {
+
+        } else if (type == "分层沉降(右线)" || type == "涵洞沉降" || type == "地表沉降(右线)") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="7">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="3">' + obj.constructionCompany + '</td><td colspan="2">检测项目</td><td colspan="2" style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="3">' + obj.supervisorCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td colspan="2">' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="3">' + obj.instrumentSpecifications + '</td> <td colspan="2">本' + dateType + '观测日期</td><td colspan="2">' + obj.thisTimeDate + '</td></tr>';
+
+        } else if (type == "地下水位") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="4">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="2">' + obj.constructionCompany + '</td><td >检测项目</td><td  style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="2">' + obj.supervisorCompany + '</td><td >上' + dateType + '观测日期</td><td >' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="2">' + obj.instrumentSpecifications + '</td> <td >本' + dateType + '观测日期</td><td >' + obj.thisTimeDate + '</td></tr>';
+
+        } else if (type == "桩体水平位移" || type == "支撑轴力") {
+            headInfo = '<table border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="7">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="3">' + obj.constructionCompany + '</td><td >检测项目</td><td colspan="3" style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="3">' + obj.supervisorCompany + '</td><td >上' + dateType + '观测日期</td><td colspan="3">' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="3">' + obj.instrumentSpecifications + '</td> <td >本' + dateType + '观测日期</td><td colspan="3">' + obj.thisTimeDate + '</td></tr>';
+        } else if (type == "桩顶水平位移" || type == "桥墩沉降") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td colspan="2">工程名称</td><td colspan="6">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td colspan="2">施工单位</td><td colspan="2">' + obj.constructionCompany + '</td><td colspan="2">检测项目</td><td colspan="2" style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td colspan="2">监理单位</td><td colspan="2">' + obj.supervisorCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td colspan="2">' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td colspan="2">仪器规格</td><td colspan="2">' + obj.instrumentSpecifications + '</td> <td colspan="2">本' + dateType + '观测日期</td><td colspan="2">' + obj.thisTimeDate + '</td></tr>';
+
+        } else if (type == "钢筋应力") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td colspan="3">工程名称</td><td colspan="5">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td colspan="3">施工单位</td><td colspan="2">' + obj.constructionCompany + '</td><td colspan="2">检测项目</td><td  style="color:red;">' + obj.measuringSpotType + '</td></tr>'
+                + '<tr align="center"><td colspan="3">监理单位</td><td colspan="2">' + obj.supervisorCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td >' + obj.lastTimeDate + '</td> </tr>'
+                + '<tr align="center"><td colspan="3">仪器规格</td><td colspan="2">' + obj.instrumentSpecifications + '</td> <td colspan="2">本' + dateType + '观测日期</td><td >' + obj.thisTimeDate + '</td></tr>';
+
+        } else if (type == "混凝土撑钢筋受力") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="3">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td >' + obj.constructionCompany + '</td><td >上' + dateType + '观测日期</td><td  style="color:red;">' + obj.lastTimeDate + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td >' + obj.supervisorCompany + '</td><td >本' + dateType + '观测日期</td><td  style="color:red;">' + obj.thisTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td >' + obj.instrumentSpecifications + '</td> <td >天气</td><td >' + '不知道哪里取' + '</td></tr>';
+        } else if (type == "隧道净空收敛") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="7">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="4">' + obj.constructionCompany + '</td><td colspan="2">上' + dateType + '观测日期</td><td  style="color:red;">' + obj.lastTimeDate + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="4">' + obj.supervisorCompany + '</td><td colspan="2">本' + dateType + '观测日期</td><td  style="color:red;">' + obj.thisTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="7">' + obj.instrumentSpecifications;
+        } else if (type == "桩顶竖向位移") {
+            headInfo = '<table  border="1" cellpadding="3" cellspacing="0" style="width: 700px;margin:auto"><tr align="center"><td >工程名称</td><td colspan="5">' + obj.projectName + '</td></tr>'
+                + '<tr align="center"><td >施工单位</td><td colspan="3">' + obj.constructionCompany + '</td><td >上' + dateType + '观测日期</td><td  style="color:red;">' + obj.lastTimeDate + '</td></tr>'
+                + '<tr align="center"><td >监理单位</td><td colspan="3">' + obj.supervisorCompany + '</td><td >本' + dateType + '观测日期</td><td  style="color:red;">' + obj.thisTimeDate + '</td> </tr>'
+                + '<tr align="center"><td >仪器规格</td><td colspan="3">' + obj.instrumentSpecifications + '</td> <td >天气</td><td >' + '不知道哪里取' + '</td></tr>';
+        }
+        return headInfo;
+    }
+
+    //获取数据头
+    function getDataHead(obj, type) {
+
+        var dataHead = "";
+        if (type == "建筑物倾斜") {
+            dataHead = '<tr align="center"><td rowspan="2">名称</td><td colspan="2">累计值</td><td>累计沉降值</td><td >距离</td><td rowspan="2" >倾斜累计值(%0)</td><td rowspan="2">倾斜方向</td><td rowspan="2">初测日期</td></tr>\n' +
+                '            <tr align="center"><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td></tr>';
+
+        } else if (type == "管线沉降(左线)") {
+
+        } else if (type == "管线沉降(右线)") {
+            dataHead = '<tr align="center"><td rowspan="2">里程</td><td rowspan="2">测点编号</td><td>初始测试值</td><td >上' + dateType + '测试值</td><td >本' + dateType + '测试值</td><td>变形量</td><td >累计值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '            <tr align="center"><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td></tr>';
+        } else if (type == "支撑轴力") {
+            dataHead = '<tr align="center"><td rowspan="2">检测项目</td><td rowspan="2">层数</td><td rowspan="2">测点编号</td><td>上' + dateType + '轴力</td><td >本' + dateType + '轴力</td><td >变化量</td><td >最大值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '            <tr align="center"><td>(kN)</td><td>(kN)</td><td>(kN)</td><td>(kN)</td></tr>';
+        } else if (type == "地表沉降(左线)") {
+            dataHead = '<tr align="center"><td rowspan="2" >检测项目</td><td rowspan="2">测点编号</td><td >初始高程</td><td>上' + dateType + '高程</td>'
+                + '<td>本' + dateType + '高程</td><td >变形量</td><td >增量</td><td>累计值</td><td rowspan="2" >初测日期</td></tr><tr align="center">'
+                + '<td>(mm)</td> <td>(mm)</td><td>(mm)</td> <td>(mm)</td> <td>(mm)</td><td>(mm)</td></tr>';
+
+        } else if (type == "围墙沉降(左线)" || type == "桩顶水平位移" || type == "涵洞沉降" || type == "地表沉降(右线)" || type == "拱顶沉降" || type == "建筑物沉降" || type == "桥墩沉降" || type == "管片沉降" || type == "桩顶沉降") {
+            dataHead = '<tr align="center"><td rowspan="2">里程</td><td rowspan="2">测点编号</td><td>初始高程</td><td >上' + dateType + '高程</td><td >本' + dateType + '高程</td><td>变形量</td><td >累计值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '            <tr align="center"><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td></tr>';
+        } else if (type == "分层沉降(左线)") {
+
+        } else if (type == "分层沉降(右线)") {
+            dataHead = '<tr align="center"><td rowspan="2">里程</td><td rowspan="2">测点编号</td><td>初始测试值</td><td >上' + dateType + '测试值</td><td >本' + dateType + '测试值</td><td>变形量</td><td >累计值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '<tr align="center"><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td></tr>';
+        } else if (type == "围墙沉降(右线)") {
+
+        } else if (type == "地下水位") {
+            dataHead = '<tr align="center"><td rowspan="2">测点编号</td><td>观测值</td><td >开挖深度</td><td >差值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '<tr align="center"><td>(m)</td><td>(m)</td><td>(m)</td></tr>';
+        } else if (type == "桩体水平位移") {
+            dataHead = ' <tr align="center"><td>测点编号</td><td colspan="7">null</td></tr>\n' +
+                '<tr align="center"><td colspan="4">CX10</td><td colspan="4">CX3</td></tr>\n' +
+                '<tr align="center"><td rowspan="2">深度</td><td>上' + dateType + '</td><td colspan="2">本' + dateType + '</td><td rowspan="2">深度</td><td>上' + dateType + '</td><td colspan="2">本' + dateType + '</td></tr>\n' +
+                '<tr align="center"><td>累计值</td><td>增量</td><td>累计值</td><td>累计值</td><td>增量</td><td>累计值</td></tr>\n' +
+                '<tr align="center"><td>(m)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(m)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td>'
+        } else if (type == "桥墩倾斜") {
+            dataHead = '<tr align="center"><td rowspan="2">名称</td><td rowspan="2" colspan="2">累计值</td><td>累计沉降差</td><td >距离</td><td rowspan="2">倾斜累计值(%0)</td><td rowspan="2">倾斜方向</td><td rowspan="2">初测日期</td></tr>\n' +
+                '            <tr align="center"><td>(mm)</td><td>(mm)</td></tr>';
+        } else if (type == "钢筋应力") {
+            dataHead = '<tr align="center"><td rowspan="2">监测项目</td><td rowspan="2">测点编号</td><td rowspan="2">钢筋计编号</td><td>上' + dateType + '应力</td><td >本' + dateType + '应力</td><td>变化量</td><td >累计值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '<tr align="center"><td>(kN)</td><td>(kN)</td><td>(kN)</td><td>(kN)</td></tr>';
+        } else if (type == "锚索应力") {
+            dataHead = '<tr align="center"><td rowspan="2">锚索层数</td><td rowspan="2">测点编号</td><td>初始预加应力值</td><td >上' + dateType + '应力值</td><td >本' + dateType + '应力值</td><td>本' + dateType + '变化量</td><td >累计应力值</td><td rowspan="2">初测日期</td></tr>\n' +
+                '            <tr align="center"><td>(kN)</td><td>(kN)</td><td>(kN)</td><td>(kN)</td><td>(kN)</td></tr>';
+        } else if (type == "混凝土撑钢筋受力") {
+            dataHead = '<tr align="center"><td >测点编号</td><td>上' + dateType + '受力</td><td >本' + dateType + '受力</td><td >本' + dateType + '变化</td></tr>';
+        } else if (type == "隧道净空收敛") {
+            dataHead = '<tr align="center"><td rowspan="2">检测项目</td><td rowspan="2">测点编号</td><td>初始测试值</td><td >上' + dateType + '测试值</td><td >本' + dateType + '测试值</td><td>变形量</td><td>累计值</td><td rowspan="2">测点编号</td></tr>\n' +
+                '            <tr align="center"><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td><td>(mm)</td></tr>';
+        } else if (type == "桩顶竖向位移") {
+            dataHead = '<tr align="center"><td rowspan="2">测点编号</td><td>初始观测值</td><td >上' + dateType + '观测值</td><td >本' + dateType + '观测值</td><td >变形量</td><td >累计值</td></tr>\n' +
+                '<tr align="center"><td>(m)</td><td>(m)</td><td>(m)</td><td>(mm)</td><td>(mm)</td></tr>';
+        }
+        return dataHead;
+    }
+
+    //获取数据
+    function getData(type, data) {
+        var dataList = new Array();
+        var tableData = "";
+        for (var key in data) {
+            dataList.push(data[key]);
+        }
+        for (var j = 0; j < dataList.length; j++) {
+            for (var key in dataList[j]) {
+                for (var i = 0; i < Object.keys(dataList[j][key]).length; i++) {
+                    if (type == "建筑物倾斜") {
+
+                    } else if (type == "管线沉降(左线)") {
+
+                    } else if (type == "支撑轴力") {
+
+                    } else if (type == "地表沉降(左线)") {
+                        if (i == 0) {
+                            tableData += '<tr  align="center"><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + '检测项目' + '</td><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].incrementValue + +'</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td><td contenteditable="true" >' + dataList[j][key][i].firstTestDate + '</td><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + key + '</td></tr>';
+                        } else {
+                            tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].incrementValue + +'</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td><td contenteditable="true" >' + dataList[j][key][i].firstTestDate + '</td></tr>';
+                        }
+                    } else if (type == "钢筋应力") {
+
+                    } else if (type == "地表沉降(右线)") {
+
+                    } else if (type == "分层沉降(左线)") {
+
+                    } else if (type == "分层沉降(右线)" || type == "涵洞沉降" || type == "桩顶沉降" || type == "管线沉降(右线)" || type == "围墙沉降(左线)") {
+                        if (i == 0) {
+                            tableData += '<tr align="center"><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + 'K12+000' + '</td><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + key + '</td></tr>';
+                        } else {
+                            tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td></tr>';
+                        }
+                    } else if (type == "围墙沉降(右线)") {
+
+                    } else if (type == "地下水位") {
+                        if (i == 0) {
+                            tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].measuringSpotValue + '</td><td contenteditable="true">' + dataList[j][key][i].excavationDepth + '</td><td contenteditable="true" >' + dataList[j][key][i].differenceVlaue + '</td><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + key + '</td></tr>';
+                        } else {
+                            tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].measuringSpotValue + '</td><td contenteditable="true">' + dataList[j][key][i].excavationDepth + '</td><td contenteditable="true" >' + dataList[j][key][i].differenceVlaue + '</td></tr>';
+                        }
+                    } else if (type == "桩体水平位移") {
+
+                    } else if (type == "桥墩倾斜") {
+
+                    } else if (type == "钢筋应力") {
+
+                    } else if (type == "锚索应力") {
+                        if (i == 0) {
+                            tableData += '<tr align="center" ><td contenteditable="true"  rowspan=' + Object.keys(dataList[j][key]).length + '>' + '第一层' + '</td><td contenteditable="true" >' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true" >' + dataList[j][key][i].initialValue + '</td><td contenteditable="true" >' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + ' >' + key + '</td></tr>';
+                        } else {
+                            tableData += '<tr  align="center"><td contenteditable="true" > ' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true" >' + dataList[j][key][i].initialValue + '</td><td contenteditable="true" >' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true"  >' + dataList[j][key][i].cumulative + '</td></tr>';
+                        }
+                    } else if (type == "支撑轴力") {
+
+                    } else if (type == "混凝土撑钢筋受力") {
+                        tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true">' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td></tr>';
+                    } else if (type == "桥墩沉降") {
+
+                    } else if (type == "桩顶竖向位移") {
+                        tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td></tr>';
+                    } else if (type == "拱顶沉降" || type == "隧道净空收敛" || type == "管片沉降" || type == "桩顶水平位移" || type == "建筑物沉降") {
+                        if (i == 0) {
+                            tableData += '<tr align="center"><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + '管片沉降' + '</td><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td><td contenteditable="true" rowspan=' + Object.keys(dataList[j][key]).length + '>' + key + '</td></tr>';
+                        } else {
+                            tableData += '<tr align="center"><td contenteditable="true">' + dataList[j][key][i].measuringSpotSensorNo + '</td><td contenteditable="true">' + dataList[j][key][i].initialValue + '</td><td contenteditable="true">' + dataList[j][key][i].lastVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].thisVlaue + '</td><td contenteditable="true" >' + dataList[j][key][i].deformationAmount + '</td><td contenteditable="true" >' + dataList[j][key][i].cumulative + '</td></tr>';
+                        }
+                    }
+                }
+            }
+        }
+        return tableData;
+    }
+
+    //获取最大值
+    //  type  类型       deformationAmountMaxValue 变形量最大值     cumulativeMaxValue 累积最大值
+    function getMaxValue(type, deformationAmountMaxValue, cumulativeMaxValue, incrementMaxValue) {
+
+        var maxValue = "";
+
+        if (type == "地表沉降(左线)") {
+            if (deformationAmountMaxValue.length > 0 & cumulativeMaxValue.length > 0 & incrementMaxValue.length > 0) {
+                return maxValue = '<tr align="center"><td  colspan="5">最大值</td><td >' + deformationAmountMaxValue[deformationAmountMaxValue.length - 1] + '</td><td >' + incrementMaxValue[incrementMaxValue.length - 1] + '</td><td >' + cumulativeMaxValue[cumulativeMaxValue.length - 1] + '</td><td></td></tr>';
+            } else {
+                return maxValue = '<tr align="center"><td  colspan="5">最大值</td><td></td><td ></td><td ></td><td></td></tr>';
+            }
+
+        } else if (type == "地下水位" || type == "混凝土撑钢筋受力" || type == "桩顶竖向位移" || type == "桥墩倾斜" || type == "建筑物倾斜" || type == "钢筋应力") {
+            return maxValue;
+        } else {
+            if (deformationAmountMaxValue.length > 0 & cumulativeMaxValue > 0) {
+                return maxValue = '<tr align="center"><td  colspan="5">最大值</td><td >' + deformationAmountMaxValue[deformationAmountMaxValue.length - 1] + '</td><td >' + cumulativeMaxValue[cumulativeMaxValue.length - 1] + '</td><td></td></tr>';
+            } else {
+                return maxValue = '<tr align="center"><td  colspan="5">最大值</td><td></td><td ></td><td></td></tr>';
+            }
+
+        }
+
+    }
+
+
+    //获取备注
+    function getRemarks(type,remarks) {
+        if(remarks == "" || remarks == "" || remarks == undefined){
+            if (type == "建筑物倾斜") {
+                return ' <tr><td  colspan="8">' + '备注：建（构）筑物倾斜控制值：2/1000。' + '</td> </tr>';
+            } else if (type == "建筑物沉降") {
+                return ' <tr><td  colspan="8">' + '备注：1.“+”表示测点隆起，“—”表示测点下沉；<br />' +
+                    '2.测点JZ1-2~ JZ1-10、JZ2-2 ~JZ2-12 、JZ3-1~ JZ3-3于2017年7月4日因置换基准点高程重取初始值，叠加之前累计。<br />' +
+                    '3.测点JZ1-1于2017年7月17日重取初始值叠加之前累计，JZ1-7于2017年7月17日被挡无法监测。<br />' +
+                    '4.测点JZ1-2于2017年7月19日重取初始值叠加之前累计。<br />' +
+                    '5.测点JZ4-5于2017年7月26日重取初始值叠加之前累计。<br />' +
+                    '6.测点JZ2-1于2017年8月1日重取初始值叠加之前累计。<br />' +
+                    '7.测点JZ4-3、JZ4-4于2017年8月4日重取初始值叠加之前累计。<br />' +
+                    '8.测点JZ2-5于2017年8月9日被破坏无法监测。于2017年10月27日新埋设测点，不叠加之前累计。<br />' +
+                    '9.测点JZ2-1于2017年8月18日重取初始值，叠加之前累计。<br />' + '</td> </tr>';
+            } else if (type == "支撑轴力") {
+                return ' <tr><td  colspan="8">' + '备注：1.“+”表示测点受力增大，“-”表示测点受力减小。' + '</td> </tr>';
+            } else if (type == "桩顶沉降") {
+                return ' <tr><td  colspan="8">' + '备注：1.“+”表示测点隆起，“—”表示测点下沉；<br />' +
+                    '       2.测点ZQC20、ZQC22、ZQC23、ZQC24、ZQC25、ZQC27、ZQC28于2017年8月13日因置换监测点重取初始值，叠加' + '</td> </tr>';
+            } else if (type == "桩体水平位移") {
+                return ' <tr><td  colspan="8">' + '备注： “+”值表示向基坑内侧位移，“-”值表示向基坑外侧位移。<br />' +
+                    '1.测点CX20于2017年8月4日因换测管槽重取初始值叠加之前累计。<br />' +
+                    '2.测点CX28于2017年8月11日重取初始值叠加之前累计。<br />' +
+                    '3.测点CX28于2017年9月4日因换测管槽重取初始值，不叠加之前累计。<br />' +
+                    '4.测点CX24于2017年9月28日重取初始值，叠加之前累计。<br />' +
+                    '5.测点CX23于2017年8月17日重取初始值，叠加之前累计。<br />' +
+                    ' 6.测点CX23于2017年9月2日重取初始值。CX18于2017年9月25日被挡，无法监测。<br />' +
+                    '7.测点CX17于2017年9月4日重取初始值，叠加之前累计。<br />' +
+                    '8.测点CX21于2017年9月8日重取初始值，叠加之前累计。<br />' +
+                    '9.测点CX13于2017年11月6日被挡，无法监测。<br />' + '</td> </tr>';
+            } else if (type == "桩顶水平位移") {
+                return ' <tr><td  colspan="8">' + '备注：<br />1.ZQS1、ZQS2、ZQS5为“-”值表示向基坑内位移，“+”值表示向基坑外位移；ZQS6为“+”值表示向基坑内位移，“-”值表示向基坑外位移，“/”表示测点被挡或破坏。<br />' +
+                    '2.\tZQS4：X为“-”值表示向基坑内位移，“+”值表示向基坑外位移，Y为“+”值表示向基坑内位移，“-”值表示向基坑外位移；ZQS7：X为“+”值表示向基坑内位移，“-”值表示向基坑外位移，Y为“+”值表示向基坑内位移，“-”值表示向基坑外位移。<br />' +
+                    '3.\tZQS3为“+”值表示向基坑内位移，“-”值表示向基坑外位移。<br />' +
+                    '4.\tZQS2于2019年6月7日重取初始值。<br />' + '</td> </tr>';
+            } else if (type == "钢筋应力") {
+                return ' <tr><td  colspan="8">' + '备注：1.“+”表示测点受拉，“-”表示测点受压。' + '</td> </tr>';
+            } else if (type == "锚索应力") {
+                return ' <tr><td  colspan="8">' + '备注：1、测点ML5-3、ML5-4于2017年11月27日由于施工原因，暂时无法监测。' + '</td> </tr>';
+            } else if (type == "混凝土撑钢筋受力") {
+                return ' <tr><td  colspan="3">' + '备注1.“+”表示受压 “-” 表示受拉；<br />' +
+                    '     2.EZL2-2， EZL1-1被破坏。<br />' + '</td><td >' + '“+”表示受力增大<br />' +
+                    '“-” 表示受力减小<br />' + '</td> </tr>';
+            } else if (type == "隧道净空收敛") {
+                return ' <tr><td  colspan="8">' + '备注：“+”表示扩张，“-”表示收敛。' + '</td> </tr>';
+            } else if (type == "桥墩沉降") {
+                return ' <tr><td  colspan="8">' + '备注：1.“+”表示测点隆起，“—”表示测点下沉；<br />' +
+                    '      2.测点QD1-1~ QD9-2、QD11-1~ QD14-2于2017年7月7日因置换基准点高程重取初始值，叠加之前累计。<br />' + '</td> </tr>';
+            } else if (type == "地表沉降(左线)") {
+                return ' <tr><td  colspan="9">' + '备注：1.“+”值表示测点隆起，“-”值表示测点下沉，“/”表示测点被挡或破坏。' + '</td> </tr>';
+            } else {
+                return ' <tr><td  colspan="8">' + '备注：1.“+”值表示测点隆起，“-”值表示测点下沉，“/”表示测点被挡或破坏。' + '</td> </tr>';
+            }
+        }else{
+            return ' <tr><td  colspan="8">' + '备注：' +remarks+ '</td> </tr>';
+        }
+
+    }
+
+
+    function getChildrenDataList(data) {
+        pictureList = data;
+    }
+
+    function getChildrenDataDate(d) {
+        list.push(d)
+        date = d;
+        if (date == "1") {
+            dateType = "次";
+        } else if (date == "2") {
+            dateType = "周";
+        } else {
+            dateType = "月";
+        }
+
+    }
+
+    //拿到子窗口中传回的数据
+    function getChildrenData(data) {
+        /*if (list.length > 0) {
+            list.splice(0, list.length);
+        }*///如果是选择多工点次位置要放开
+        for (var i = 0; i < data.length; i++) {
+            var line = data[i];
+            for (var j = 0; j < line.children.length; j++) {
+                var bidSection = line.children;
+                for (var k = 0; k < bidSection[j].children.length; k++) {
+                    var workSpot = bidSection[j].children;
+
+                    list.push(workSpot[k].id);
+                    /* for (var m = 0; m < workSpot[k].children.length; m++) {
+                         list.push(workSpot[k].children[m].title);
+                     }*/
+                }
+            }
+
+        }
+
+        $.ajax({
+            url: "/system/report/getData?list=" + list,
+            contentType: "application/json;charset=UTF-8",
+            dataType: "json",
+            success: function (netty) {
+                if (netty.code == 200) {
+                    list = new Array();
+                    map = netty.data;
+                    var number = 0;
+
+                    for (var key in map) {
+                        number++;
+                        var title = key;
+                        var mapData = map[key];
+                        workSpotId = mapData.workSpotId;
+                        var listDada = mapData.measuringSpotData;
+                        var deformationAmountMaxValue = new Array();//变形量最大值
+                        var cumulativeMaxValue = new Array(); //累计值最大值
+                        var incrementMaxValue = new Array();//增量最大值
+
+
+
+                        incrementMaxValue.sort(function (a, b) {
+                            return Math.abs(a) - Math.abs(b);
+                        });
+                        //计算绝对值最大值
+                        deformationAmountMaxValue.sort(function (a, b) {
+                            return Math.abs(a) - Math.abs(b);
+                        });
+                        cumulativeMaxValue.sort(function (a, b) {
+                            return Math.abs(a) - Math.abs(b);
+                        });
+
+                        for (var j = 0; j < listDada.length; j++) {
+                            for (var key in listDada[j]) {
+                                for (var i = 0; i < Object.keys(listDada[j][key]).length; i++) {
+                                    deformationAmountMaxValue.push(listDada[j][key][i].deformationAmount);
+                                    cumulativeMaxValue.push(listDada[j][key][i].cumulative);
+                                    incrementMaxValue.push(listDada[j][key][i].incrementValue);
+                                }
+                            }
+                        }
+
+
+
+                        //获取标题
+                        var title = '<div width="700" style="text-align: center" size="3"   color="red">' + mapData.measuringSpotType + '</font size="3">检测数据</div>';
+                        //获取头部信息
+                        var tableView = getHeadInfo(mapData, mapData.measuringSpotType)
+                        //获取数据头
+                        var dataHead = getDataHead(mapData.measuringSpotData, mapData.measuringSpotType);
+                        //获取数据
+                        var tableData = getData(mapData.measuringSpotType, mapData.measuringSpotData)
+                        //获取最大值
+                        var maxValue = getMaxValue(mapData.measuringSpotType, deformationAmountMaxValue, cumulativeMaxValue, incrementMaxValue)
+
+                        //获取备注
+                        var remarks = getRemarks(mapData.measuringSpotType,mapData.remarks)
+                        //获取图片
+                        var img = ' <tr align="center"><td colspan="4"><button class="layui-btn open-popup" data-title="添加采集仪" th:attr="data-url=@{/system/acquisitionInstrument/add}" data-size="744,390"><i class="fa fa-plus"></i>选择测点</button></td><td colspan="4"><div id="imgInfo"></div></td></tr>'
+
+                        /*var view = "";
+                        if (mapData.measuringSpotType == "地下水位") {
+                            view = title + tableView + dataHead + tableData + remarks + img + '</table>';
+                        } else {
+                            view = title + tableView + dataHead + tableData + maxValue + remarks + img + '</table>';
+                        }*/
+                        /* hashMap.set(mapData.measuringSpotType,title + tableView + dataHead + tableData + maxValue + remarks + img)*/
+                        hashMap[mapData.measuringSpotType] = title + tableView + dataHead + tableData + maxValue + remarks;
+
+                        $("#content").append(title + tableView + dataHead + tableData + maxValue + remarks);
+                    }
+                }
+            }
+        });
+    }
+
+    layui.use(['tree', 'util', 'laydate'], function () {
+        var tree = layui.tree
+            , layer = layui.layer
+            , util = layui.util,
+            laydate = layui.laydate;
+        $ = layui.jquery;
+
+
+        laydate.render({
+            id: "startTime", elem: "#startTime", trigger: 'click', done: function (value, date) {
+                startTime = value;
+            }
+        });
+        laydate.render({
+            id: "endTime", elem: "#endTime",
+            trigger: 'click', done: function (value, date) {
+                endTime = value;
+            }
+        });
+
+
+        $(document).on('click', "#workSpot", function () {
+            layer.open({
+                type: 2,
+                title: '',
+                shadeClose: true,
+                maxmin: true,
+                area: ['60%', '60%'],
+                /* content: '/system/report/measuringSpotTree' //这里content是一个普通的String*/
+                content: ['/system/report/measuringSpotTree']
+            });
+        });
+
+        $(document).on('click', "#measuringSpot", function () {
+            if(workSpotId == null || workSpotId ==undefined || workSpotId <= 0){
+                layer.msg('请先选择工点');
+            }else{
+                layer.open({
+                    type: 2,
+                    title: '',
+                    shadeClose: true,
+                    maxmin: true,
+
+                    area: ['98%', '90%'],
+                    /* content: '/system/report/measuringSpotTree' //这里content是一个普通的String*/
+                    content: ['/system/report/editMeasuringSpot?id=' + workSpotId]
+                });
+            }
+        });
+    });
+</script>
+<script>
+    $(function () {
+        var Base64 = {
+            _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+            encode: function (e) {
+                var t = "";
+                var n, r, i, s, o, u, a;
+                var f = 0;
+                e = Base64._utf8_encode(e);
+                while (f < e.length) {
+                    n = e.charCodeAt(f++);
+                    r = e.charCodeAt(f++);
+                    i = e.charCodeAt(f++);
+                    s = n >> 2;
+                    o = (n & 3) << 4 | r >> 4;
+                    u = (r & 15) << 2 | i >> 6;
+                    a = i & 63;
+                    if (isNaN(r)) {
+                        u = a = 64
+                    } else if (isNaN(i)) {
+                        a = 64
+                    }
+                    t = t + this._keyStr.charAt(s) + this._keyStr.charAt(o) + this._keyStr.charAt(u) + this._keyStr.charAt(a)
+                }
+                return t
+            },
+            decode: function (e) {
+                var t = "";
+                var n, r, i;
+                var s, o, u, a;
+                var f = 0;
+                e = e.replace(/[^A-Za-z0-9+/=]/g, "");
+                while (f < e.length) {
+                    s = this._keyStr.indexOf(e.charAt(f++));
+                    o = this._keyStr.indexOf(e.charAt(f++));
+                    u = this._keyStr.indexOf(e.charAt(f++));
+                    a = this._keyStr.indexOf(e.charAt(f++));
+                    n = s << 2 | o >> 4;
+                    r = (o & 15) << 4 | u >> 2;
+                    i = (u & 3) << 6 | a;
+                    t = t + String.fromCharCode(n);
+                    if (u != 64) {
+                        t = t + String.fromCharCode(r)
+                    }
+                    if (a != 64) {
+                        t = t + String.fromCharCode(i)
+                    }
+                }
+                t = Base64._utf8_decode(t);
+                return t
+            },
+            _utf8_encode: function (e) {
+                e = e.replace(/rn/g, "n");
+                var t = "";
+                for (var n = 0; n < e.length; n++) {
+                    var r = e.charCodeAt(n);
+                    if (r < 128) {
+                        t += String.fromCharCode(r)
+                    } else if (r > 127 && r < 2048) {
+                        t += String.fromCharCode(r >> 6 | 192);
+                        t += String.fromCharCode(r & 63 | 128)
+                    } else {
+                        t += String.fromCharCode(r >> 12 | 224);
+                        t += String.fromCharCode(r >> 6 & 63 | 128);
+                        t += String.fromCharCode(r & 63 | 128)
+                    }
+                }
+                return t
+            },
+            _utf8_decode: function (e) {
+                var t = "";
+                var n = 0;
+                var r = c1 = c2 = 0;
+                while (n < e.length) {
+                    r = e.charCodeAt(n);
+                    if (r < 128) {
+                        t += String.fromCharCode(r);
+                        n++
+                    } else if (r > 191 && r < 224) {
+                        c2 = e.charCodeAt(n + 1);
+                        t += String.fromCharCode((r & 31) << 6 | c2 & 63);
+                        n += 2
+                    } else {
+                        c2 = e.charCodeAt(n + 1);
+                        c3 = e.charCodeAt(n + 2);
+                        t += String.fromCharCode((r & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+                        n += 3
+                    }
+                }
+                return t
+            }
+        }
+
+        //前后端总体思路
+        //  1、前端需要客户每'+dateType+'选中图片就发送请求保存到数据库
+        //  2、把网页转成64传到后台 让后台保存该html方便放到输入流里面
+        //  3、把html网页地址传到转成word的工具类 最终返回已经转好的地址
+        /**
+         * Map转json
+         * @param m
+         * @returns String
+         */
+        function MapTOJson(m) {
+            var str = '{';
+            var i = 1;
+            m.forEach(function (item, key, mapObj) {
+                if (mapObj.size == i) {
+                    str += '"' + key + '":"' + item + '"';
+                } else {
+                    str += '"' + key + '":"' + item + '",';
+                }
+                i++;
+            });
+            str += '}';
+            //console.log(str);
+            return str;
+        }
+
+        $("input[type='button']").click(function (event) {
+            var templateId = document.getElementById('templateId').value;
+
+            hashMap['pictureList'] = pictureList;
+            hashMap['templateId'] = templateId;
+            hashMap['workSpotId'] = workSpotId;
+            hashMap['date'] = date;
+            hashMap['startTime'] = startTime;
+            hashMap['endTime'] = endTime;
+            hashMap['dateType'] = dateType;
+
+            var mstr = JSON.stringify(hashMap);
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json;charset=utf-8',
+                url: "/system/report/saveReport",
+                processData: false,
+                dataType: 'json',
+                data: mstr,
+                success: function (data) {
+                    if (data.code == 200) {
+                        layer.msg('文档已保存请到报告列表进行查看');
+                        var index = parent.layer.getFrameIndex(window.name); //获取当前窗口的name
+                        parent.layer.close(index);		//关闭窗口
+
+                    } else {
+                        layer.msg('！文档保存失败，请联系管理员');
+                    }
+                },
+                error: function () {
+                    layer.msg('！文档保存失败，请联系管理员');
+                }
+            });
+
+
+            /*$.ajax({
+                type: "POST",
+                dataType: 'json',
+                async:false,
+                data:{templateId:templateId,map:hashMap},
+                url: "/system/report/saveReport",
+                success: function(msg){
+
+                }
+            });*/
+
+        });
+
+    })
+</script>
+</body>
+</html>
+

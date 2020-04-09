@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <i class="fa fa-bars"></i><span id="title" style="margin-left: 10px"></span>
+
+        <div class="pull-right screen-btn-group">
+            <button class="layui-btn  add-bidSection" style="margin-right: 40px"data-title="添加标段" th:attr="data-url=@{/system/menu/addBidSection}" data-size="770,425"><i class="fa fa-plus"></i> 添加标段</button>
+        </div>
+        <i class="layui-icon layui-icon-refresh refresh-btn" ></i>
+    </div>
+    <div class="layui-card-body">
+        <input type="hidden" name="lineInfoId" th:if="${lineInfo}" th:value="${lineInfo.id}"/>
+        <div class="timo-detail-page">
+            <table class="layui-table" id="userLineData" lay-filter="userLineData"></table>
+            <script id="titleTpl" type="text/html">
+                <a class="open-popup" data-title="编辑标段" th:attr="data-url=@{'/system/menu/bidSectionEdit?id={{d.id}}&tree=false'}" data-size="814,450" href="#">编辑</a>
+            </script>
+        </div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+        var lineInfoId = layui.jquery('input[name= lineInfoId]').val();
+
+
+
+        table.render({
+            elem: '#userLineData',
+            method: 'get',
+            page: true,
+            loading: true,
+            url: '/system/bidSection/userBidSectionData?lineInfoId='+lineInfoId,  //数据地址
+            page:true,
+            maxWidth: 300,
+            cols:
+                [
+                    [
+                        {field: 'name', title: '标段名称',width:'13%',align:'center', sort: true},
+                        {field: 'no', title: '标段编码',width:'13%',align:'center', sort: true},
+                        {field: 'designCompany', title: '施工单位',width:'13%',align:'center', sort: true},
+                        /*{field: 'easurePattern', title: '测量模式',},*/
+                        {field: 'constructionCompany', title: '设计单位',width:'13%',align:'center', sort: true},
+                        {field: 'supervisorCompany', title: '监理单位',width:'13%',align:'center', sort: true},
+                        {field: 'bidSectionSurvey', title: '合同段概况',width:'13%',align:'center'},
+                        {field: 'remarks', title: '备注',width:'13%',align:'center'},
+                        {field: 'title', title: '操作', templet: '#titleTpl',fixed: 'right',align:'center'}
+
+                    ]
+                ],id: 'userLineData', done: function (res) {
+                tdTitle();
+            }
+        });
+
+        $.ajax({
+            url: "/system/lineInfo/title?id="+lineInfoId ,
+            success: function (value) {
+               document.getElementById ("title").innerHTML = value.data.name;
+            }
+        });
+
+        /* 添加/修改弹出层 */
+        $(document).on("click", ".add-bidSection", function () {
+
+            var title = $(this).attr("data-title");
+            var url = $(this).attr("data-url");
+            var size = $(this).attr("data-size");
+
+            if (size === undefined || size === "auto") {
+                size = ['50%', '80%'];
+            }else if (size === "max") {
+                size = ['100%', '100%'];
+            }else if (size.indexOf(',') !== -1) {
+                var split = size.split(",");
+                size = [split[0] + 'px', split[1] + 'px'];
+            }
+            window.layerIndex = layer.open({
+                type: 2,
+                title: title,
+                shadeClose: true,
+                maxmin: true,
+                area: size,
+                content: [url+'?id='+lineInfoId+'&tree=false', 'on']
+            });
+        });
+
+    });
+
+</script>
+</body>
+</html>

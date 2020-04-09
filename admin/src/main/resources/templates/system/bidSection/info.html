@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body>
+<div class="timo-detail-page">
+    <div class="timo-detail-title">基本信息</div>
+    <table class="layui-table timo-detail-table">
+        <tbody>
+        <tr>
+            <th width='100px'>标段ID</th>
+            <td th:text="${nodeData.id}"></td>
+            <th width='100px'>标段名称</th>
+            <td th:text="${nodeData.name}"></td>
+        </tr>
+        <tr>
+            <th width='100px'>标段编码</th>
+            <td th:text="${nodeData.No}"></td>
+
+        </tr>
+        <tr>
+            <th>起始里程</th>
+            <td th:text="${nodeData.startMileage}"></td>
+            <th>结束里程</th>
+            <td th:text="${nodeData.endMileage}"></td>
+        </tr>
+        <tr>
+            <th>设计单位</th>
+            <td th:text="${nodeData.designCompany}"></td>
+            <th>施工单位</th>
+            <td th:text="${nodeData.constructionCompany}"></td>
+        </tr>
+        <tr>
+            <th>监理单位</th>
+            <td th:text="${nodeData.supervisorCompany}"></td>
+            <th>合同段概况</th>
+            <td th:text="${nodeData.bidSectionSurvey}"></td>
+        </tr>
+        <tr>
+            <th>备注</th>
+            <td th:text="${nodeData.remarks}" colspan="4"></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+<script th:replace="/common/template :: script"></script>
+</body>
+</html>

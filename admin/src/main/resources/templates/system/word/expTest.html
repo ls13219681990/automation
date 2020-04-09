@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>html导出生成word文档</title>
+</head>
+
+<body>
+
+
+<div width="900" align="center"><font color="red">jhhhhhhhhhhhhhh</font>aaaaa</div>
+
+<div class=" word">
+    <input type="test">
+</div>
+<input type="button" value="导出word">
+<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script th:src="@{/js/fileSaver.js}" charset="utf-8"></script>
+<script th:src="@{/js/wordexport.js}" charset="utf-8"></script>
+
+<script>
+    $(function () {
+        $("input[type='button']").click(function (event) {
+            $(".word").wordExport('word文档');
+        });
+    })
+</script>
+</body>
+</html>

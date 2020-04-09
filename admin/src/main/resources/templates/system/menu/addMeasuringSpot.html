@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+    <head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+        <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+        <style>
+            .layui-table {
+
+                width: 1030px;
+                background-color: #fff;
+                color: #666;
+                margin: 10px 0;
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="layui-form timo-compile">
+            <form th:action="@{/system/menu/saveMeasuringSpot}">
+                <input type="hidden" name="tree" id="tree" th:if="${tree}" th:value="${tree}"/>
+                <input type="hidden" name="id" th:if="${menu}" th:value="${menu.id}"/> <!--//修改的时候回显的东西-->
+                <input type="hidden" name="pid" th:if="${pMenu}" th:value="${pMenu.id}"/>
+
+
+                <div class="layui-form-item">
+                    <div class="layui-input-inline">
+                        <div class="input-measuringSpot-block">
+
+                            <div class="input-title-left required">测点名称</div>
+                            <div class="layui-input-inline" required>
+                                <input class="layui-input" type="text" name="name">
+                            </div>
+
+                            <div class="input-title-left required">测点编码</div>
+                            <div class="layui-input-inline">
+                                <input class="layui-input" type="text" name="no" th:value="${no}" disabled="disabled"
+                                       style=";background-color:#dbdbdb">
+                            </div>
+                            <div class="input-title-left required">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                            <div class="layui-input-inline" required>
+                                <input class="layui-input" type="text" name="editNo">
+                            </div>
+
+
+                            <!-- <input  type="text" name="name"  style="width:240px;height: 38px;" >
+                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;测点编码&nbsp;&nbsp;&nbsp;
+                             <input type="text" name="no" th:value="${no}" style="width:116px ;height: 38px;;background-color:#dbdbdb"
+                                    disabled="disabled">
+                             <input type="text" name="editNo" style="width:116px;height: 38px;">
+                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;测点类型&nbsp;&nbsp;
+                             <input  type="text" name="measuringSpotType"  style="width:240px;height: 38px;" >-->
+                        </div>
+                    </div>
+                </div>
+
+
+                <!--<div class="layui-form-item">
+                    <label class="layui-form-label  required">测点名称</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="name"   >
+                    </div>
+                    <label class="layui-form-label required">测点编码</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="no"   th:value="${no}">
+                    </div>
+                    <label class="layui-form-label ">测点类型</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="measuringSpotType"   >
+                    </div>
+                </div>-->
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">测点位置</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="measuringSpotPosition">
+                    </div>
+                    <label class="layui-form-label ">安装部位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="installationLocation">
+                    </div>
+                    <label class="layui-form-label ">埋设时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="embedmentTime" placeholder="yyyy-MM-dd">
+                    </div>
+                </div>
+
+                <!-- <div class="layui-form-item">
+                     <label class="layui-form-label ">辅助传感器</label>
+                     <div class="layui-input-inline">
+                         <input class="layui-input" type="text" name="auxiliarySensor"   >
+                     </div>
+                 </div>-->
+
+                <div class="layui-form-item">
+
+
+                    <!--<div class="layui-form-item">
+                        <label class="layui-form-label required">菜单类型</label>
+                        <div class="layui-input-inline">
+                            <select name="measurePattern" mo:dict="MENU_TYPE" mo-selected="${menu?.type}" mo-empty="" lay-verify="type"></select>
+                        </div>
+                    </div>-->
+                    <label class="layui-form-label ">测点初值</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="initialValue">
+                    </div>
+                    <label class="layui-form-label required">测量模式</label>
+                    <div class="layui-input-inline">
+                        <select name="measurePattern" mo:dict="MEASUREMENT_MODE" mo-empty="" lay-verify="type"></select>
+                        <!--mo-selected="${menu?.type}"-->
+                    </div>
+
+                    <label class="layui-form-label ">量测项目</label>
+                    <div class="layui-input-inline">
+                        <select name="measuringSpotType" mo:dict="MEASUREMENT_ITEMS" mo-empty=""
+                                lay-verify="type"></select>
+                    </div>
+                    <!-- <label class="layui-form-label ">测量模式</label> measuringSpotType
+                     <div class="layui-input-inline">
+                         <input class="layui-input" type="text" name="measurePattern"   >
+                     </div>-->
+
+
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label required">左右线</label>
+                    <div class="layui-input-inline">
+                        <select name="direction" mo:dict="DIRECTION" mo-empty=""
+                                lay-verify="type"></select>
+                    </div>
+                    <label class="layui-form-label">测值符号</label>
+                    <div class="layui-input-inline">
+                        <input type="radio" name="measuringSpotSymbol" value="1" title="正" checked="">
+                        <input type="radio" name="measuringSpotSymbol" value="-1" title="负">
+                    </div>
+                    <label class="layui-form-label ">备注</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="remark">
+                    </div>
+                </div>
+                <div style="margin-left: 39px">
+                    <table class="layui-table">
+                        <tr>
+                            <td rowspan="2" width="95">阈值管理</td>
+                            <td>累计值报警阈值</td>
+                            <td>
+                                <input class="layui-input" type="text" name="cumulativeGulesThreshold"
+                                       style="background-color: #FF0000;">
+                            </td>
+                            <td>
+                                <input class="layui-input" type="text" name="cumulativeOrangeThreshold"
+                                       style="background-color: #FFCC00;">
+                            </td>
+                            <td>
+                                <input class="layui-input" type="text" name="cumulativeYellowThreshold"
+                                       style="background-color: #FFFF00;">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>变化速率报警阈值</td>
+                            <td>
+                                <input class="layui-input" type="text" name="changeGulesThreshold"
+                                       style="background-color: #FF0000;">
+                            </td>
+                            <td>
+                                <input class="layui-input" type="text" name="changeOrangeThreshold"
+                                       style="background-color: #FFCC00;">
+                            </td>
+                            <td>
+                                <input class="layui-input" type="text" name="changeYellowThreshold"
+                                       style="background-color: #FFFF00;">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="layui-form-item timo-finally">
+                    <button class="layui-btn " lay-submit="" lay-filter="SubmitParentParent">
+                        <i class="fa fa-check-circle"></i>
+                        保存
+                    </button>
+                    <button class="layui-btn btn-secondary close-popup">
+                        <i class="fa fa-times-circle"></i>
+                        关闭
+                    </button>
+                </div>
+            </form>
+        </div>
+        <script th:replace="/common/template :: script"></script>
+        <script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+        <script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+        <script type="text/javascript" th:src="@{/js/addMenu.js}"></script>
+
+
+        <script>
+            layui.use('laydate', function () {
+                var laydate = layui.laydate;
+
+                //执行一个laydate实例
+                laydate.render({
+                    elem: '#embedmentTime'
+                    , type: 'datetime'
+                });
+            });
+        </script>
+
+    </body>
+</html>

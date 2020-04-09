@@ -1,0 +1,397 @@
+/**
+ * 版权声明： 智表（ZCELL）研发团队保留所有权利，未经明确的书面许可，不得修改本文档，或以任何形式或任何手段复制产品的任何部分，进行商业用途。
+ * 如需购买 请联系 邮件：108653210@qq.com
+ * Version: 1.0.0.1
+ * Create by zf  2018/3/2.
+ */
+
+*{
+    font-family:'Times New Roman',Georgia,Serif;
+    font-size:14px;
+    margin:0;
+    /*padding:1px;*/
+    border:0;
+
+}
+
+.book
+{
+   /*overflow:scroll;*/
+    /*border:1px solid #DDECFE;*/
+    position:relative;
+    background: #ffffff;;
+    margin:0 1px 0 1px;;
+
+
+    width:100%;
+    height:100%;
+
+
+}
+
+.sheet{
+    /*overflow:scroll;*/
+    /*border:1px solid #DDECFE;*/
+    position:relative;
+    background:#FFF;
+    /*overflow: scroll;*/
+    /*margin:0 1px 0 1px;;*/
+    /*overflow: auto;*/
+    /*width:100%;*/
+    /*height:100%;*/
+    /*overflow: scroll;*/
+    width:100%;
+    height:100%;
+}
+
+.sheet table{
+
+    border-collapse: separate;
+
+    /*border-collapse: collapse;*/
+    /*border-spacing:0;*/
+    /*border:1px solid #b1b5ba;*/
+
+    /*border-top:1px solid #c0c0c0;*/
+    /*border-left:1px solid #c0c0c0;*/
+    border-right:1px solid #c0c0c0;
+    border-bottom:1px solid #c0c0c0;
+
+
+
+    table-layout:fixed;
+    word-break:break-all;
+    /*width:800px;*/
+    /*width:50%;*/
+    margin-bottom:1px;
+    /*box-sizing: border-box;*/
+    padding:0px;
+height: 0;
+    width: 0;
+    outline-width: 0;
+
+
+    max-width: none;
+    max-height: none;
+
+
+
+}
+
+
+
+.sheet table thead tr th{
+
+
+    /*padding:2px;*/
+    /*border:1px solid #dadcdd;*/
+    /*border-width:0 1px 1px 0;*/
+
+    /*border:1px solid #c0c0c0;*/
+    /*!*border-width:0 1px 1px 0;*!*/
+    /*border-width:1px 1px 1px 1px;*/
+
+
+    border-top:1px solid #c0c0c0;
+    border-left:1px solid #c0c0c0;
+    border-right:1px solid transparent;
+    border-bottom:1px solid transparent;
+
+
+
+    background-color:#F3F3F3;
+    color:#000000;
+
+    cursor:default;
+    text-align:center;
+    height:20px;
+    /*width:70px;*/
+    overflow:hidden;
+    font-weight: normal;
+
+
+    word-wrap: normal;
+    white-space:nowrap;
+
+    /*!*white-space:pre;*!*/
+    /*!*empty-cells:show;*!*/
+
+
+}
+
+.sheet table tbody tr th{
+
+    /*padding: 2px;*/
+
+    /*border:1px solid #dadcdd;*/
+    /*border-width:0 1px 1px 0;*/
+
+    /*border: solid #c0c0c0;*/
+    /*border-width:0 1px 1px 0;*/
+    /*!*border-width:1px 1px 1px 1px;*!*/
+
+    border-top:1px solid #c0c0c0;
+    border-left:1px solid #c0c0c0;
+    border-right:1px solid transparent;
+    border-bottom:1px solid transparent;
+
+
+    background-color:#F3F3F3;
+    color:#000000;
+    font-weight: normal;
+    cursor:default;
+    text-align:center;
+    height:20px;
+    /*width:70px;*/
+    overflow:hidden;
+
+
+    word-wrap: normal;
+    white-space:nowrap;
+
+}
+
+.sheet table tbody tr td{
+
+
+    /*padding: 2px;*/
+
+    /*border:1px solid #dadcdd;*/
+
+
+    /*border-width: 0 1px 1px 0;*/
+    /*border-style: solid;*/
+
+    /*border:solid #c0c0c0;*/
+    /*border-width:0 1px 1px 0;*/
+    /*!*border-width:1px 1px 1px 1px;*!*/
+
+
+    border-top:1px solid #c0c0c0;
+    border-left:1px solid #c0c0c0;
+    border-right:1px solid transparent;
+    border-bottom:1px solid transparent;
+
+
+
+
+    /*border-color: #999;*/
+    /*border-color: #dadcdd;*/
+
+
+    /*white-space:pre;*/
+
+    background:#fff;
+    empty-cells:show;
+    text-align:center;
+    /*height:50px;*/
+    /*width:50px;*/
+    word-wrap: normal;
+    /*word-break:break-all;*/
+
+
+    /*单元格内容超出后直接隐藏*/
+    overflow:hidden;
+    /*white-space:pre;*/
+    /*防止含回车符时折行*/
+    white-space:nowrap;
+
+
+
+
+    /*单元格内容超出后折行*/
+    /*word-break:break-all;*/
+
+    /*单元格内容超出后...代替*/
+    /*overflow:hidden;*/
+    /*white-space: pre;*/
+    /*text-overflow: ellipsis;*/
+
+
+
+}
+
+
+/*选中后边框线*/
+.cell-selected-border{
+    /*background-color: rgba(51, 122, 183, 0.2) !important;*/
+
+    /*border: 2px double #4887C7;*/
+    /*border: 2px double royalblue;*/
+    /*!*display: block;*!*/
+    /*!*float: left;*!*/
+
+
+    /*padding: 2px;*/
+
+    border-left:  1px double  #000080 !important;
+    border-top:  1px double #000080 !important;
+    border-bottom: 1px  double  #000080  !important ;
+    border-right: 1px double #000080 !important;
+
+}
+
+
+/*公式单元格前景色*/
+.cell-formula-color{
+    color: green;
+}
+
+/*只读单元格背景色*/
+.cell-readonly-backcolor{
+    background-color: lightgray !important;;
+}
+
+ /*选中后背景色*/
+.cell-selected-bgcolor{
+    /*padding: 2px;*/
+    /*#B7DBFF*/
+    background-color:#B7DBFF !important;
+
+}
+
+/*选中后标尺背景色*/
+.lab-selected-bgcolor{
+    /*padding: 2px;*/
+    background-color:#FDD75A !important;
+
+    /*border-left:  1px solid #C28A30 !important;*/
+    /*border-top:  1px solid #C28A30 !important;*/
+    /*border-bottom: 1px  solid  #C28A30  !important ;*/
+    /*border-right: 1px solid #C28A30 !important;*/
+
+}
+
+/*COPY前框线*/
+.cell-copybefore-border{
+
+    border-left:  1px dashed #000 !important;
+    border-top:  1px dashed #000 !important;
+    border-bottom: 1px  dashed  #000  !important ;
+    border-right: 1px dashed #000 !important;
+
+}
+
+
+/*.table-stbar-cal*/
+/*{*/
+    /*table-layout:fixed;*/
+    /*!*box-sizing: border-box;*!*/
+    /*!*border:1px solid #DDECFE;*!*/
+
+/*}*/
+
+/*.td-stbar-cal*/
+/*{*/
+    /*!*overflow:scroll;*!*/
+    /*!*border:1px solid #DDECFE;*!*/
+    /*position:relative;*/
+    /*!*background: #ffffff;;*!*/
+    /*padding:2px 2px 2px 2px;*/
+    /*font-size:11px;*/
+    /*!*font-weight:bold;*!*/
+    /*!*cellspacing=\"2\"*!*/
+    /*word-wrap:break-word;*/
+    /*word-break:break-all;*/
+    /*white-space: normal;*/
+
+
+/*}*/
+
+
+.cell_editor{
+    position:absolute;
+    display:none;
+    padding:0;
+    margin:0;
+    /*z-index:100;*/
+    background-color: white;
+    border:2px solid #00A7FD;
+}
+
+
+/*.cell_editor .text_editor{*/
+    /*display:block;*/
+    /*width:100%;*/
+    /*height:100%;*/
+    /*border:0;*/
+    /*padding:0;*/
+    /*background-color:#fff;*/
+    /*margin:0 0 0 0px;*/
+    /*!*border:1px solid #ccc;*!*/
+    /*outline:none;*/
+    /*resize:none;*/
+/*}*/
+
+.cell_editor .text_editor{
+    /*width: 400px;*/
+    min-height: 20px;
+    max-height: 300px;
+    _height: 120px;
+    margin-left: auto;
+    margin-right: auto;
+    /*padding: 2px;*/
+    outline: 0;
+    /*border: 1px solid #a0b3d6;*/
+    /*font-size: 12px;*/
+    line-height: 20px;
+    /*padding: 0px;*/
+    word-wrap: break-word;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: white;
+
+    /*border-color: rgba(82, 168, 236, 0.8);*/
+    /*box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);*/
+}
+
+.cell_editor .dropdown_editor{
+    /*width: 400px;*/
+    min-height: 20px;
+    /*max-height: 300px;*/
+    _height: 120px;
+    margin-left: auto;
+    margin-right: auto;
+    /*padding: 2px;*/
+    outline: 0;
+    border: 1px solid #a0b3d6;
+    /*font-size: 12px;*/
+    line-height: 20px;
+    /*padding: 0px;*/
+    word-wrap: break-word;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: white;
+
+}
+
+
+/*.handsontable .htAutocompleteArrow {*/
+    /*float: right;*/
+    /*font-size: 10px;*/
+    /*color: #EEE;*/
+    /*cursor: default;*/
+    /*width: 16px;*/
+    /*text-align: center;*/
+/*}*/
+
+/*.handsontable td .htAutocompleteArrow:hover {*/
+    /*color: #777;*/
+/*}*/
+
+/*.handsontable td.area .htAutocompleteArrow {*/
+    /*color: #d3d3d3;*/
+/*}*/
+
+
+/*下拉框*/
+.dropdown_editor a{float:left;line-height:25px;height:25px;padding-left:5%;font-size:14px;cursor:default;text-align:left;width:95%;overflow:hidden; }
+/*.dropdown p a:hover{background:url(img/tbline_bg.png);color:#666;}*/
+.dropdown_editor a:hover{background-color: #3399FF ;color:white;}
+
+.zcell_dragline{
+     position:absolute;
+    background-color: darkgreen;
+    z-index:5;
+    overflow:hidden;
+}

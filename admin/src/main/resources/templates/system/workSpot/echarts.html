@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.springframework.org/schema/data/jaxb">
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link rel="stylesheet" th:href="@{/lib/layui/css/layui.css}" media="all">
+    <script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/lib/echarts/echarts.js}" charset="utf-8"></script>
+    <script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+    <script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+</head>
+
+
+<body>
+<body style="height: 100%; margin: 0">
+<input type="hidden" name="id" id="id" th:if="${id}" th:value="${id}"/>
+<input type="hidden" name="startTime" id="startTime" th:if="${startTime}" th:value="${startTime}"/>
+<input type="hidden" name="endTime" id="endTime" th:if="${endTime}" th:value="${endTime}"/>
+<div id="echats" style="width: 1000px;height: 550px"></div>
+<script type="text/javascript">
+    var e = document.getElementById("echats");
+    var myChart = echarts.init(e);
+    var app = {};
+    option = null;
+    var data1 = [10, 20, 30, 40, 50, 60, 70, 80, 50, 100, 30, 130];
+    chart1();
+
+    function chart1() {
+        var id = document.getElementById('id').value;
+        console.log(id);
+        var startTime = document.getElementById('startTime').value;
+        var endTime = document.getElementById('endTime').value;
+        if (id === undefined || id === null || id === '' || id.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            $.get('/system/workSpot/echartsData?id=' + id, '&startTime=' + startTime + '&endTime=' + endTime, function (data) {
+                var y = [];
+                var title =[];
+                for (var key in data) {
+                        y.push(data[key]);
+                        title.push(key);
+                    }
+                option = {
+                    title: {
+                        text: '测点数据折线图'
+                    },
+                    xAxis: {
+                        type: 'time',
+                    },
+                    grid: {//设置左边距和右边距
+                        left: '3%',
+                        right: '4%',
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    legend: {
+                        data: title
+                    },
+                    dataZoom: [{//添加放大缩小
+                        show: true
+                    }, {
+                        type: 'inside'
+                    }],
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    series: functionNodname(y,title),//引入方法创建折线
+                };
+                //实例化图表
+                if (option && typeof option === "object") {
+                    myChart.setOption(option, true);
+                }
+                ;
+            });
+        }
+        ;
+
+        //动态创建折线对象
+        function functionNodname(data,title) {
+            var series = []
+            for (var p = 0; p < data.length; p++) {
+                var xyData = [];
+                var arr = data[p];
+
+                for (var o = 0; arr.length > o; o++) {
+                    var coordinate = [];
+                    coordinate.push(arr[o].receiveTime);
+                    coordinate.push(arr[o].measuringSpotValue);
+                    xyData.push(coordinate)
+                }
+                var item = {
+                    name: title[p]+" ",
+                    type: 'line',
+                    data: xyData
+                }
+
+                series.push(item)
+            }
+            return series;
+        }
+    }
+</script>
+</body>
+</body>
+</html>

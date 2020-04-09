@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/workSpot/updateWorkSpot}">
+        <input type="hidden" name="id" th:if="${workSpot}" th:value="${workSpot.id}"/>
+        <input type="hidden" name="bidSectionId" th:if="${workSpot}" th:value="${workSpot.bidSectionId}"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">工点名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="name"   th:value="${workSpot?.name}">
+            </div>
+        </div>
+
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-inline">
+                <div class="input-block">
+                    <label class="input-title-left required" >工点编码</label>
+                    <input type="text" name="bidSectionNo" th:value="${bidSection?.no}" style="width:116px ;height: 38px;background-color:#dbdbdb"
+                           >
+                    <input type="text" name="no" th:value="${workSpot?.no}" style="width:116px;height: 38px;">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;工点类型&nbsp;&nbsp;
+                    <input  type="text" name="workSpotType"  style="width:240px;height: 38px;" th:value="${workSpot?.workSpotType}">
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">起始里程</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="startMileage"   th:value="${workSpot?.startMileage}">
+            </div>
+            <label class="layui-form-label ">结束里程</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="endMileage"   th:value="${workSpot?.endMileage}">
+            </div>
+
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label ">工点概况</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="workSpotSurvey"   th:value="${workSpot?.workSpotSurvey}">
+            </div>
+            <label class="layui-form-label ">备注</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="remarks"   th:value="${workSpot?.remarks}">
+            </div>
+        </div>
+        <div class="layui-form-item timo-finally">
+            <button class="layui-btn " lay-submit="" lay-filter="ajaxSubmitParentParent"><i class="fa fa-check-circle"></i> 保存</button>
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+<script type="text/javascript" th:src="@{/js/addMenu.js}"></script>
+</body>
+</html>

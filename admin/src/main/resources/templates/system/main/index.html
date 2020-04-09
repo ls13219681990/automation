@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        a{
+            color: #005980;
+        }
+        .widget-small{
+            background-color: #FFFFFF;
+            overflow: hidden;
+            text-align: center;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
+        }
+        .widget-small .fa{
+            float: left;
+            width: 40%;
+            line-height: 80px;
+            color: #FFFFFF;
+        }
+        .widget-user .fa{
+            background-color: #029789;
+        }
+        .widget-visit .fa{
+            background-color: #17a2b8;
+        }
+        .widget-message .fa{
+            background-color: #fbad4c;
+        }
+        .widget-like .fa{
+            background-color: #ff646d;
+        }
+        .widget-small-info{
+            float: left;
+            text-align: left;
+            width: 40%;
+            margin-left: 20px;
+            margin-top: 18px;
+            line-height: 24px;
+        }
+        .widget-small-info h4{
+            font-size: 18px;
+        }
+        .widget-small-info span{
+            font-size: 16px;
+        }
+        .project-introduce{
+            min-height: 466px;
+        }
+        .project-introduce h4{
+            font-weight: bold;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+        .project-introduce li{
+            list-style: decimal;
+            margin-left: 28px;
+        }
+    </style>
+</head>
+<body class="timo-layout-page">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md3 layui-col-sm6 layui-col-xs12">
+            <div class="widget-small widget-user">
+                <i class="icon fa fa-users fa-3x"></i>
+                <div class="widget-small-info">
+                    <h4>用户</h4>
+                    <span>12</span>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6 layui-col-xs12">
+            <div class="widget-small widget-visit">
+                <i class="icon fa fa-line-chart fa-3x"></i>
+                <div class="widget-small-info">
+                    <h4>访问</h4>
+                    <span>1,200</span>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6 layui-col-xs12">
+            <div class="widget-small widget-message">
+                <i class="icon fa fa-comments-o fa-3x"></i>
+                <div class="widget-small-info">
+                    <h4>信息</h4>
+                    <span>41</span>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6 layui-col-xs12">
+            <div class="widget-small widget-like">
+                <i class="icon fa fa-star fa-3x"></i>
+                <div class="widget-small-info">
+                    <h4>收藏</h4>
+                    <span>306</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script th:replace="/common/template :: script"></script>
+</body>
+</html>

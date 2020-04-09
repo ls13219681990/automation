@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+    <head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+        <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+    </head>
+    <body>
+        <div class="layui-form timo-compile">
+            <form th:action="@{/system/bidSection/updatebidSection}">
+                <input type="hidden" name="id" th:if="${bidSection}" th:value="${bidSection.id}"/>
+                <input type="hidden" name="lineInfoId" th:if="${bidSection}" th:value="${bidSection.lineInfoId}"/>
+                <!--<input type="hidden" name="pid" th:if="${bidSection}" th:value="${bidSection.id}"/>-->
+                <div class="layui-form-item">
+                    <label class="layui-form-label required">标段名称</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="name" th:value="${bidSection?.name}">
+                    </div>
+                </div>
+               <!-- <div class="layui-form-item">
+                    <label class="layui-form-label required">标段编码</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="no" th:value="${bidSection?.no}">
+                    </div>
+                    <label class="layui-form-label ">起始里程</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="startMileage" th:value="${bidSection?.startMileage}">
+                    </div>
+                </div>-->
+
+
+                <div class="layui-form-item">
+                    <div class="layui-input-inline">
+                        <div class="input-block">
+                            <label class="layui-form-label required">标段编码</label>
+                            <!--  <div  class="input-title-left"></div>-->
+                            <input type="text" name="lineNo" th:value="${lineInfo?.no}" style="width:116px ;height: 38px;background-color:#dbdbdb"”>
+                            <input   type="text" name="no"  th:value="${bidSection?.no}"     style="width:116px;height: 38px;">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;起始里程&nbsp;&nbsp;
+                            <input   type="text" name="startMileage"  style="width:240px;height: 38px;" th:value="${bidSection?.startMileage}">
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">结束里程</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="endMileage" th:value="${bidSection?.endMileage}">
+                    </div>
+                    <label class="layui-form-label ">设计单位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="designCompany" th:value="${bidSection?.designCompany}">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">施工单位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="constructionCompany" th:value="${bidSection?.constructionCompany}">
+                    </div>
+                    <label class="layui-form-label ">监理单位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="supervisorCompany" th:value="${bidSection?.supervisorCompany}">
+                    </div>
+
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">合同段概况</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="bidSectionSurvey" th:value="${bidSection?.bidSectionSurvey}">
+                    </div>
+                    <label class="layui-form-label ">备注</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="remarks" th:value="${bidSection?.remarks}">
+                    </div>
+                </div>
+
+
+                <div class="layui-form-item timo-finally">
+                    <button class="layui-btn " lay-submit="" lay-filter="ajaxSubmitParentParent"><i class="fa fa-check-circle"></i> 保存</button>
+                    <button class="layui-btn btn-secondary close-popup">
+                        <i class="fa fa-times-circle"></i>
+                        关闭
+                    </button>
+                </div>
+            </form>
+        </div>
+        <script th:replace="/common/template :: script"></script>
+        <script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+        <script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+        <script type="text/javascript" th:src="@{/js/addMenu.js}"></script>
+    </body>
+</html>

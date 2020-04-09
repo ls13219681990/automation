@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo" xmlns:height="http://www.w3.org/1999/xhtml">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 358px;
+            height: 130px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .dict-value:hover,
+        .dict-value:hover .control {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .control {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .dict-value .control button {
+            margin: 0;
+            border-color: #ffffff;
+        }
+
+        .dict-value .control button:hover {
+            border-color: #888888;
+        }
+
+        .dict-value .control button .fa {
+            margin-right: 4px;
+            color: #888888;
+        }
+
+        .dict-value .control .field-order .fa {
+            margin: 0;
+        }
+
+        .dict-value .control .field-order.active {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .content {
+            height: 95px;
+            padding: 2px 0;
+            overflow: auto;
+        }
+
+        .dict-value .content .dict-option {
+            margin: 0;
+            padding: 2px 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-indent: 4px;
+            font-size: 14px;
+        }
+
+        .dict-value .content .dict-option:hover {
+            background-color: rgba(1, 170, 237, 0.17);
+        }
+
+        .dict-value .content .dict-option.active {
+            background-color: rgba(1, 170, 237, 0.37);
+            font-weight: bold;
+        }
+
+        .dict-value .content .dict-option.error {
+            background-color: rgba(255, 16, 0, 0.41);
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/measuringSpot/saveMeasuringSpotSensor}" method="get">
+        <input type="hidden" name="id" th:if="${measuringSpotId}" th:value="${measuringSpotId}"/>
+        <input type="hidden" name="measuringSpotName" th:if="${ms}" th:value="${ms.name}"/>
+        <input type="hidden" name="nodeId" th:if="${nodeId}" th:value="${nodeId}"/>
+        <div class="pull-right screen-btn-group">
+            <div class="btn-group-right">
+                <div class="layui-btn " id="addAuxiliary" data-title="添加辅助传感器" data-size="750,500">
+                    采集仪分配传感器
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">选择采集仪</label>
+            <div class="layui-input-inline">
+                <select name="xm" id="xm" lay-verify="required" lay-filter="xmFilter">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">选择通道</label>
+            <div class="layui-input-inline">
+                <table class="layui-table" id="acquisitionTable" lay-filter="acquisitionTable"></table>
+                <script id="del" type="text/html">
+                    {{#  if(d.isBinding==0){ }}
+                    <div class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" id="addSensor"
+                         data-size="615,558">绑定传感器
+                    </div>
+                    {{#  } else { }}
+                    <div class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" id="delAcquisitionSensor"
+                         data-size="615,558">解除绑定
+                    </div>
+                    {{#  } }}
+                </script>
+            </div>
+        </div>
+        <div class="layui-form-item timo-finally " style="text-align:right">
+            <!--<div class="layui-btn" id="saveSensor"><i class="fa fa-check-circle"></i> 提交</div>-->
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script>
+    layui.use(['form', 'upload', 'layer'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+
+
+        var data = layui.jquery('input[name= nodeId]').val();
+
+        var measuringSpotId = layui.jquery('input[name= id]').val();
+
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            $.ajax({
+                url: "/system/acquisitionInstrument/findWorkSpotAcquisition?" + "nodeId=" + data+"&measuringSpotId="+measuringSpotId,
+                success: function (data) {
+                    if (data != "null") {
+
+                        $.each(data, function (index, item) {
+                            $('#xm').append(new Option(item.no, item.no));// 下拉菜单里添加元素
+                        });
+                        layui.form.render("select");
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery;
+
+        var data = layui.jquery('input[name= id]').val();
+
+            $(document).on('click', '#saveSensor', function () {
+                var b = layui.table.checkStatus('acquisitionTable').data;
+                var cquisitionId = b[0].entityId; //采集仪ID
+                var passagewayNumber = b[0].id;//采集仪通道
+                var measuringSpotId = layui.jquery('input[name= id]').val();
+                $.ajax({
+                    url: '/system/measuringSpot/saveMeasuringSpotSensor' + '?cquisitionId=' + cquisitionId + '&passagewayNumber=' + passagewayNumber + '&measuringSpotId=' + measuringSpotId,
+                    success: function (result) {
+                        if (result.data == null) {
+                            result.data = 'submit[refresh]';
+                        }
+                        $.fn.Messager(result);
+                    }
+                });
+            });
+
+    });
+</script>
+
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery;
+
+
+        $(document).on('click', '#addAuxiliary', function () {
+
+            var data = layui.jquery('select[name= xm]').val();
+
+                var title = $(this).data("title");
+                var size = $(this).attr("data-size");
+                if (size === undefined || size === "auto") {
+                    size = ['50%', '80%'];
+                } else if (size === "max") {
+                    size = ['100%', '100%'];
+                } else if (size.indexOf(',') !== -1) {
+                    var split = size.split(",");
+                    size = [split[0] + 'px', split[1] + 'px'];
+                }
+                layer.open({
+                    type: 2,
+                    title: title,
+                    shadeClose: true,
+                    maxmin: true,
+                    area: size,
+                    content: ['/system/acquisitionInstrument/detail?acquisitionNo=' + data, 'no'] //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                });
+
+        });
+    });
+</script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        var data = layui.jquery('input[name=nodeName]').val();
+        var name = layui.jquery('input[name=measuringSpotName]').val();
+
+            form.on('select(xmFilter)', function (data) {
+                table.render({
+                    elem: '#acquisitionTable',
+                    method: 'get',
+                    width: 600,  //宽度
+                    url: '/system/acquisitionInstrument/findAacquisition?acquisitionNo=' + data.value + '&measuringSpotName=' + name,  //数据地址
+                    //page:true,
+                    cols:
+                        [
+                            [
+                                {field: 'name', title: '通道号', width: '20%',align:'center', sort: true},
+                                /*{field: 'value', title: '传感器编号', width: 150, fixed: 'left'},*/
+                                {field: 'value', title: '传感器编号', width: '20%', templet: "#data",align:'center', sort: true},
+                                {field: 'measuringSpotNo', title: '绑定测点名称', width: '20%',align:'center', sort: true},
+                                {field: 'acquisitionNumber', title: '序号', width: '20%', edit: 'text',align:'center', sort: true},
+                                {field: '', title: '操作', width: '20%', templet: "#del",align:'center'}
+
+                            ]
+                        ],id: 'acquisitionTable', done: function (res) {
+                        tdTitle();
+                    }
+                });
+
+
+                table.on('edit(acquisitionTable)', function (obj) {
+                    var value = obj.value //得到修改后的值
+                        , data = obj.data //得到所在行所有键值
+                        , field = obj.field; //得到字段
+
+
+
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/system/measuringSpot/group',//发送请求
+                        data: data,
+                        success: function (result) {
+                            if (result.code === 200) {
+                                layer.msg('序号添加成功' );
+                            } else {
+                                layer.msg(result.msg);
+                            }
+                        }
+                    });
+                });
+
+
+
+
+                //监听行单击事件（单击事件为：rowDouble）
+                table.on('row(acquisitionTable)', function (obj) {
+
+                    var data = obj.data;
+                    if (data.isBinding == 0) {
+                        //新增
+
+                        var cquisitionId = data.entityId; //采集仪ID
+                        var passagewayNumber = data.id;//采集仪通道
+                        var measuringSpotId = layui.jquery('input[name= id]').val();
+                        $.ajax({
+                            url: '/system/measuringSpot/saveMeasuringSpotSensor?cquisitionId=' + cquisitionId + '&passagewayNumber=' + passagewayNumber + '&measuringSpotId=' + measuringSpotId,
+                            success: function (result) {
+                                if (result.code === 200) {
+                                    layer.msg(result.msg, {
+                                        icon: 1,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+
+                                } else {
+                                    layer.msg(result.msg, {
+                                        icon: 2,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        //取消绑定
+                        var cquisitionId = data.entityId; //采集仪ID
+                        var passagewayNumber = data.id;//采集仪通道
+                        $.ajax({
+                            url: '/system/measuringSpot/delMeasuringSpotSensor?cquisitionId=' + cquisitionId + '&passagewayNumber=' + passagewayNumber,
+                            success: function (result) {
+                                if (result.code === 200) {
+                                    layer.msg(result.msg, {
+                                        icon: 1,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+
+                                } else {
+                                    layer.msg(result.msg, {
+                                        icon: 2,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+    });
+
+</script>
+</body>
+</html>

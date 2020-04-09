@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/acquisitionInstrument/saveAcquisition}" method="get">
+        <input type="hidden" name="id" th:if="${acquisition}" th:value="${acquisition.id}"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">采集仪名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="name"
+                       th:value="${acquisition?.name}">
+            </div>
+            <label class="layui-form-label ">采集仪编号</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="No" th:value="${acquisition?.No}">
+            </div>
+            <label class="layui-form-label ">安装地点</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="installationSite"
+                       th:value="${acquisition?.installationSite}">
+            </div>
+        </div>
+        <div id="content"></div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        $(document).on("click", ".delAcquisitionSensor", function () {
+            var number = $(this).attr("data-number");
+            $.ajax({
+                url: '/system/acquisitionInstrument/delAcquisitionSensor?cquisitionId=' + acquisitionId + '&passagewayNumber=' + number,
+                success: function (result) {
+                    if (result.code === 200) {
+                        layer.msg(result.msg, {
+                            icon: 1,
+                            time: 3000,
+                            end: function () {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        layer.msg(result.msg, {
+                            icon: 2,
+                            time: 3000,
+                            end: function () {
+                                location.reload();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        $(document).on("click", ".addSensor", function () {
+            var number = $(this).attr("data-number");
+            layer.open({
+                type: 2,
+                area: ['500px', '350px'],
+                content: ['/system/acquisitionInstrument/toAcquisitionSensor?cquisitionId=' + acquisitionId + '&passagewayNumber=' + number, 'no'] //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+            });
+        });
+
+        function loadTable() {
+            var id = $("input[name='id']").val()
+            $.get('/system/acquisitionInstrument/findAllTable?id=' + id, function (result) {
+
+                var table = "<div class='layui-row'>";
+                var dataList = result.data;
+                if (dataList.length > 0) {
+                    acquisitionId = dataList[0].value;
+                }
+
+                for (var j = 0, len = dataList.length; j < len; j++) {
+                    var operation = '';
+
+                    if (dataList[j].value != undefined && dataList[j].value != null && dataList[j].value != "") {
+
+                        operation = '<div class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" class="delAcquisitionSensor"  th:attr="data-number=@{'+dataList[j].id+'} >解除绑定 </div>';
+                    } else {
+                        operation = '<div class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal"  class="addSensor"    th:attr="data-number=@{'+dataList[j].id+'}  >添加传感器 </div>';
+                    }
+                    table += '<div class=\'layui-col-md2\' ><table border="1" cellpadding="3" cellspacing="0" class=\'layui-table\'  lay-size=\'sm\' ><tr align="center"><th>通道号</th><th>传感器编号</th><th>操作</th></tr><tr><td >' + dataList[j].id + '</td><td >' + dataList[j].value + '</td><td>' + operation + '</td></tr></table></div>'
+
+                }
+                table += '</div>'
+                $("#content").append(table);
+            });
+        }
+
+        loadTable();
+    });
+</script>
+
+
+</body>
+</html>

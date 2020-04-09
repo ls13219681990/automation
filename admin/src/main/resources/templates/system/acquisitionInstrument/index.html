@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 采集仪管理</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+
+        <div class="layui-row timo-card-screen">
+            <div class="pull-left layui-form-pane timo-search-box">
+                <div class="layui-inline">
+                    <label class="layui-form-label">采集仪编号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="no"  placeholder="请输入采集仪编号" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button id="search" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="pull-right screen-btn-group">
+                <button class="layui-btn open-popup" data-title="添加采集仪" th:attr="data-url=@{/system/acquisitionInstrument/add}" data-size="744,390"><i class="fa fa-plus"></i> 添加</button>
+            </div>
+        </div>
+        <div class="timo-table-wrap">
+            <div class="timo-detail-page">
+                <table class="layui-table" id="userAcquisition" lay-filter="userAcquisition"></table>
+
+                <script type="text/html" id="switchTpl">
+                    <input type="checkbox" name="sex" value="{{d.id}}" lay-skin="switch" lay-text="开|关"
+                           lay-filter="openingOrClos" {{ d.intervalstate== 1 ? 'checked' : '' }}>
+                </script>
+
+                <script id="titleTpl" type="text/html">
+                    <a id="once"    data-title="{{d.id}}"
+                       th:attr="url=@{/system/acquisitionInstrument/sendCommand?code=3&id={{d.id}}&openingOrClos={{d.intervalstate}}}">单次采集</a>
+                    <a class="open-popup" data-title="分配传感器"
+                       th:attr="data-url=@{'/system/acquisitionInstrument/detail/{{d.id}}'}" data-size="1470,680"
+                       href="#">分配传感器</a>
+                    <a class="open-popup" data-title="编辑采集仪"
+                       th:attr="data-url=@{'/system/acquisitionInstrument/edit/{{d.id}}'}" data-size="764,360" href="#">编辑</a>
+                    <a id="del" th:attr="data-id=@{'{{d.id}}'}">删除</a>
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        $(document).on('click', '#once', function () {
+            var url = $(this).attr("url");
+            var id = $(this).data("title");
+            $.ajax({
+                url: '/system/acquisitionInstrument/getOnlineState?id=' + id,
+                success: function (result) {
+                    if (result.code === 200) {
+                        if (result.data == 1) {
+                            $.ajax({
+                                url: url,
+                                success: function (result) {
+                                    if (result.code === 200) {
+                                        layer.msg('采集指令发送完成');
+                                    } else {
+                                        layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                                    }
+                                }
+                            });
+                        } else {
+                            layer.msg('该采集仪连接的4G模块和服务器没有建立连接');
+                        }
+                    } else {
+                        layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                    }
+                }
+            });
+
+
+
+        });
+
+        $(document).on('click', '#del', function () {
+            var id = $(this).attr("data-id");
+
+            $.ajax({
+                url: "/system/acquisitionInstrument/findWorkSpotAcquisitionAndSensor" + "?id=" + id,
+                success: function (data) {
+                    layer.confirm(data.msg, {icon: 3, title: '提示'}, function (index) {
+                        $.ajax({
+                            url: '/system/acquisitionInstrument/delete/' + id,
+                            success: function (result) {
+                                if (result.code === 200) {
+                                    layer.msg(result.msg, {
+                                        icon: 1,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                } else {
+                                    layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        });
+
+
+        table.render({
+            elem: '#userAcquisition',
+            method: 'get',
+            //屏幕高度-合适的高度
+            page: true,
+            loading: true,
+            cellMinWidth: 90, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            url: '/system/acquisitionInstrument/userAcquisition',  //数据地址
+            autoSort: true,
+
+            maxWidth: 300,
+            cols:
+                [
+                    [
+                        {field: 'name', title: '采集仪名称', width: '9%',align:'center', sort: true},
+                        {field: 'no', title: '采集仪编号', width: '9%',align:'center', sort: true},
+                        {field: 'netWorkId', title: '4G模块ID', width: '12%',align:'center', sort: true},
+                        {field: 'installationSite', title: '安装地点', width: '10%',align:'center', sort: true},
+                        {field: 'installationTime', title: '安装时间', width: '12%',align:'center', sort: true},
+                        {field: 'communicationProtocol', title: '通讯协议', width: '9%',align:'center', sort: true},
+                        {field: 'openingOrClos', title: '采集间隔开关', width: '10%', templet: '#switchTpl', unresize: true,align:'center'},
+                        {field: 'intervalTime', title: '采集间隔', width: '9%', edit: 'text',align:'center'},
+                        {field: '', title: '操作', width: '20%', templet: '#titleTpl', align: 'center'}
+                    ]
+                ],id: 'userAcquisition', done: function (res) {
+                tdTitle();
+            }
+        });
+        table.on('edit(userAcquisition)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            $.ajax({
+                type: 'POST',
+                url: '/system/acquisitionInstrument/editInterval',//发送请求
+                data: data,
+                success: function (result) {
+                    if (result.code === 200) {
+                        layer.msg('已将间隔时间改为' + value);
+                    } else {
+                        layer.msg(result.msg);
+                    }
+                }
+            });
+        });
+        //监听开关操作操作
+        form.on('switch(openingOrClos)', function (obj) {
+
+            var id = this.value;
+
+
+            $.ajax({
+                url: '/system/acquisitionInstrument/getOnlineState?id=' + id,
+                success: function (result) {
+                    if (result.code === 200) {
+
+                        if (result.data == 1) {
+                            var openingOrClos = 1;
+                            if (!obj.elem.checked) {
+                                openingOrClos = 0;
+                            }
+                            $.ajax({
+                                url: '/system/acquisitionInstrument/sendCommand?code=4&id=' + id + '&openingOrClos=' + openingOrClos,
+                                success: function (result) {
+                                    if (result.code === 200) {
+                                        layer.msg('设置成功');
+                                    } else {
+                                        if (obj.elem.checked) {
+                                            obj.elem.checked = false;
+                                        } else {
+                                            obj.elem.checked = true;
+                                        }
+                                        form.render('checkbox');
+                                        layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                                    }
+                                }
+                            });
+                        } else {
+                            if (obj.elem.checked) {
+                                obj.elem.checked = false;
+                            } else {
+                                obj.elem.checked = true;
+                            }
+                            form.render('checkbox');
+                            layer.msg('该采集仪连接的4G模块和服务器没有建立连接');
+                        }
+                    } else {
+
+                        if (obj.elem.checked) {
+                            obj.elem.checked = false;
+                        } else {
+                            obj.elem.checked = true;
+                        }
+                        form.render('checkbox');
+
+                        layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                    }
+                }
+            });
+
+            //打开开关按照我们设定的间隔时间进行采集 如果关闭那么就是后台自动整时获取数据
+
+        });
+
+        //监听提交 lay-filter="search"
+        form.on('submit(search)', function (data) {
+
+            var no = layui.jquery('input[name= no]').val();
+
+
+            //执行重载
+            table.reload('userAcquisition', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+                , where: {//这里传参 向后台
+                    name: no
+                    //可传多个参数到后台... ，分隔
+                }
+                , url: '/system/acquisitionInstrument/userAcquisition?no=' + no//后台做模糊搜索接口路径
+                , method: 'post'
+            });
+            return false;//false：阻止表单跳转 true：表单跳转
+        });
+
+
+    });
+
+</script>
+</body>
+</html>

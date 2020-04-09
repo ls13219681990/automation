@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 358px;
+            height: 130px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .dict-value:hover,
+        .dict-value:hover .control {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .control {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .dict-value .control button {
+            margin: 0;
+            border-color: #ffffff;
+        }
+
+        .dict-value .control button:hover {
+            border-color: #888888;
+        }
+
+        .dict-value .control button .fa {
+            margin-right: 4px;
+            color: #888888;
+        }
+
+        .dict-value .control .field-order .fa {
+            margin: 0;
+        }
+
+        .dict-value .control .field-order.active {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .content {
+            height: 95px;
+            padding: 2px 0;
+            overflow: auto;
+        }
+
+        .dict-value .content .dict-option {
+            margin: 0;
+            padding: 2px 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-indent: 4px;
+            font-size: 14px;
+        }
+
+        .dict-value .content .dict-option:hover {
+            background-color: rgba(1, 170, 237, 0.17);
+        }
+
+        .dict-value .content .dict-option.active {
+            background-color: rgba(1, 170, 237, 0.37);
+            font-weight: bold;
+        }
+
+        .dict-value .content .dict-option.error {
+            background-color: rgba(255, 16, 0, 0.41);
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/workSpot/saveWorkSpotCollection}" >
+        <input type="hidden" name="id" th:if="${workSpot}" th:value="${workSpot.id}"/>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">工点名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="name"  th:value="${workSpot?.name}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">选择通道</label>
+            <div class="layui-input-inline">
+                <table class="layui-table" id="acquisitionTable" lay-filter="acquisitionTable"></table>
+                <script id="del" type="text/html">
+                    {{#  if(d.workSpotId==null){ }}
+                    <!--style="color: #40AFFE"-->
+                    <div class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" id="addSensor"
+                         data-size="615,558">绑定采集仪
+                    </div>
+                    {{#  } else { }}
+                    <div class="layui-btn layui-btn-xs layui-btn-radius layui-btn-normal" id="delAcquisitionSensor"
+                         data-size="615,558">解除绑定
+                    </div>
+                    {{#  } }}
+                </script>
+            </div>
+        </div>
+        <div class="layui-form-item timo-finally " style="text-align:right">
+           <!-- <button class="layui-btn ajax-submit"><i class="fa fa-check-circle"></i> 提交</button>-->
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        var id = layui.jquery('input[name= id]').val();
+        if (id === undefined || id === null || id === '' || id.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            table.render({
+                elem: '#acquisitionTable',
+                method: 'get',
+                height: 'full-250', //屏幕高度-合适的高度
+                width: 471,  //宽度
+                url: '/system/workSpot/findWorkSpotAcquisition?id=' + id,  //数据地址
+                //page:true,
+                cols:
+                    [
+                        [
+                            {field: 'name', title: '采集仪名称', width: 150,align:'center', sort: true},
+                            /*{field: 'value', title: '传感器编号', width: 150, fixed: 'left'},*/
+                            {field: 'no', title: '采集仪编号', width: 150, templet: "#data",align:'center', sort: true},
+                            {field: '', title: '操作', width: 150, templet: "#del",align:'center'}
+
+                        ]
+                    ],id: 'acquisitionTable', done: function (res) {
+                    tdTitle();
+                }
+            });
+        }
+
+            //监听行单击事件（单击事件为：rowDouble）
+            table.on('row(acquisitionTable)', function (obj) {
+                var data = obj.data;
+                if (data.workSpotId == null) {
+                    //新增
+                    var acquisitionNo = data.no; //采集仪ID
+                    var id = layui.jquery('input[name= id]').val();
+                    if (id === undefined || id === null || id === '' || id.length == 0) {
+                        layer.msg("数据异常");
+                    } else {
+                        $.ajax({
+                            url: '/system/workSpot/saveWorkSpotCollection?acquisitionNo=' + acquisitionNo + '&id=' + id,
+                            success: function (result) {
+                                if (result.code === 200) {
+                                    layer.msg(result.msg, {
+                                        icon: 1,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                } else {
+                                    layer.msg(result.msg, {
+                                        icon: 2,
+                                        time: 3000,
+                                        end: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    //取消绑定
+                    var acquisitionNo = data.no; //采集仪ID
+                    $.ajax({
+                        url: '/system/workSpot/unbound?acquisitionNo=' + acquisitionNo,
+                        success: function (result) {
+                            if (result.code ===200) {
+                                layer.msg(result.msg, {
+                                    icon: 1,
+                                    time: 3000,
+                                    end: function () {
+                                        location.reload();
+                                    }
+                                });
+
+                            }else {
+                                layer.msg(result.msg, {
+                                    icon: 2,
+                                    time: 3000,
+                                    end: function () {
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+    })
+
+</script>
+
+
+
+</body>
+</html>

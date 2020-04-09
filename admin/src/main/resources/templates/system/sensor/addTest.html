@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 358px;
+            height: 130px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .dict-value:hover,
+        .dict-value:hover .control {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .control {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .dict-value .control button {
+            margin: 0;
+            border-color: #ffffff;
+        }
+
+        .dict-value .control button:hover {
+            border-color: #888888;
+        }
+
+        .dict-value .control button .fa {
+            margin-right: 4px;
+            color: #888888;
+        }
+
+        .dict-value .control .field-order .fa {
+            margin: 0;
+        }
+
+        .dict-value .control .field-order.active {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .content {
+            height: 95px;
+            padding: 2px 0;
+            overflow: auto;
+        }
+
+        .dict-value .content .dict-option {
+            margin: 0;
+            padding: 2px 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-indent: 4px;
+            font-size: 14px;
+        }
+
+        .dict-value .content .dict-option:hover {
+            background-color: rgba(1, 170, 237, 0.17);
+        }
+
+        .dict-value .content .dict-option.active {
+            background-color: rgba(1, 170, 237, 0.37);
+            font-weight: bold;
+        }
+
+        .dict-value .content .dict-option.error {
+            background-color: rgba(255, 16, 0, 0.41);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/sensor/add}">
+        <input type="hidden" name="id" th:if="${sensor}" th:value="${sensor.id}"/>
+        <input type="hidden" name="physicsUnitValue" th:if="${sensor}" th:value="${sensor.physicsUnit}"/>
+        <input type="hidden" name="edit" th:if="${edit}" th:value="${edit}"/>
+        <input type="hidden" name="tRId" th:if="${sensor}" th:value="${sensor?.temperatureResistanceName}"/>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">传感器名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="name" th:value="${sensor?.name}" autocomplete="off">
+            </div>
+            <label class="layui-form-label ">传感器编号</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="No" th:value="${sensor?.No}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">传感器类型</label>
+            <div class="layui-input-inline">
+                <select name="type" mo:dict="SENSOR_TYPE" mo-selected="${sensor?.type}" mo-empty="" lay-verify="type"
+                        th:value="${sensor?.type}"></select>
+                <!--mo-selected="${menu?.type}"-->
+            </div>
+            <label class="layui-form-label ">传感器型号</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="model" th:value="${sensor?.model}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">传感器厂家</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="manufactor" th:value="${sensor?.manufactor}">
+            </div>
+
+
+            <label class="layui-form-label ">物理量单位</label>
+            <div class="layui-input-inline">
+                <select class="layui-form" name="physicsUnit" id="physicsUnit" lay-verify="required"
+                        lay-filter="xmFilter" th:value="${sensor?.physicsUnit}">
+                    <!--                <select  name="netWorkId1" id="xm1" th:value="${acquisition?.netWorkId}">-->
+                    <option value=""></option>
+                </select>
+                <!--<select id="physicsUnit" name="physicsUnit"  th:value="${sensor?.physicsUnit}"></select>
+                &lt;!&ndash;mo-selected="${menu?.type}"&ndash;&gt;-->
+            </div>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">小数点位</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="decimalPoint" th:value="${sensor?.decimalPoint}">
+            </div>
+            <label class="layui-form-label ">传感器零点值</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="zeroPointValue" th:value="${sensor?.zeroPointValue}">
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">温阻表</label>
+            <div class="layui-input-inline">
+                <!--<input class="layui-input" type="text" name="temperatureResistanceName" autocomplete="off" id="search_text">
+                &lt;!&ndash;autocomplete="off" &ndash;&gt;
+                <div id="auto_div">
+                </div>-->
+
+                <select class="layui-form" name="temperatureResistanceName" id="xm" lay-verify="required"
+                        lay-filter="xmFilter">
+                    <!--                <select  name="netWorkId1" id="xm1" th:value="${acquisition?.netWorkId}">-->
+                    <option value=""></option>
+                </select>
+
+            </div>
+            <label class="layui-form-label">辅助传感器</label>
+            <div class="layui-input-inline">
+                <input type="radio" name="isAuxiliarySensor" value="1" title="是">
+                <input type="radio" name="isAuxiliarySensor" value="0" title="否" checked="">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">K</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="k" th:value="${parameter?.k}">
+            </div>
+            <label class="layui-form-label ">F0</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="f0" th:value="${parameter?.f0}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">KT</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="kt" th:value="${parameter?.kt}">
+            </div>
+            <label class="layui-form-label ">T0</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="t0" th:value="${parameter?.t0}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">B</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="b" th:value="${parameter?.b}">
+            </div>
+            <label class="layui-form-label ">C</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="c" th:value="${parameter?.c}">
+            </div>
+        </div>
+        <div class="layui-form-item timo-finally">
+            <button class="layui-btn ajax-submit"><i class="fa fa-check-circle"></i> 保存</button>
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script>
+    layui.use(['element'], function () {
+        var $ = layui.jquery;
+        var index = 1;
+        var edit = layui.jquery('input[name=edit]').val();
+        var ns = layui.jquery('input[name=physicsUnitValue]').val();
+        $.ajax({
+            url: "/system/dict/getDict?label=" + 'UNIT_OF_PHYSICAL_QUANTITY',
+            async: false,
+            success: function (data) {
+                for (var key in data) {
+                    if (edit != null && edit != "" && edit != undefined) {
+                        if (key === ns) {
+                            $("#physicsUnit").append("<option id=" + key + "  value='" + key + "' selected='' >" + data[key] + "</option>");
+                            // var domId = "#"+sid;
+                            // $(domId).attr('checked',true);
+                        } else {
+                            $("#physicsUnit").append("<option id=" + key + " value='" + key + "'>" + data[key] + "</option>");
+                        }
+                    } else {
+                        /*if (index == 1) {
+                            $("#physicsUnit").append("<option id=" + key + " value='" + key + "'>" + "请选择" + "</option>");
+                        }*/
+                        $("#physicsUnit").append("<option id=" + key + " value='" + key + "'>" + data[key] + "</option>");
+                    }
+                    index++;
+                }
+            }
+        });
+
+        var tRId = layui.jquery('input[name=tRId]').val();
+
+
+        $.ajax({
+            url: "/system/temperatureResistance/findAll",
+            async: false,
+            success: function (data) {
+
+
+                $.each(data, function (index, item) {
+
+                        if (item === undefined || item === null || item === '') {
+                            return true;
+                        }
+                        var id = item.id;
+                        var name = item.name;
+
+                        if (edit != null && edit != "" && edit != undefined) {
+                            if (id == tRId) {
+                                $("#xm").append("<option id=" + id + "  value='" + id + "' selected='' >" + name + "</option>");
+
+                            } else {
+                                $("#xm").append("<option id=" + id + " value='" + id + "'>" + name + "</option>");
+                            }
+                        } else {
+
+                            $("#xm").append("<option id=" + id + " value='" + id + "'>" + name + "</option>");
+                        }
+                    }
+                );
+            }
+        });
+
+
+    });
+</script>
+<script>
+    layui.use(['form', 'upload', 'layer'], function () {
+            var $ = layui.jquery;
+            var form = layui.form;
+            var laydate = layui.laydate;
+
+
+            /*$.ajax({
+                url: "/system/temperatureResistance/findAll",
+                success: function (data) {
+                    if (data != "null") {
+                        console.log(data);
+                        var list = new Array();
+                        for (var i = 0; i < data.length; i++) {
+                            list[i] = data[i].name;
+                        }
+
+                        /!*var list = ["小张", "小苏", "小杨", "老张", "老苏", "老杨", "老爷爷", "小妹妹", "老奶奶", "大鹏", "大明", "大鹏展翅", "你好", "hello", "hi"];*!/
+                        var old_value = "";
+                        var highlightindex = -1;   //高亮
+                        //自动完成
+                        function AutoComplete(auto, search, mylist) {
+                            if ($("#" + search).val() != old_value || old_value == "") {
+                                var autoNode = $("#" + auto);   //缓存对象（弹出框）
+                                var carlist = new Array();
+                                var n = 0;
+                                old_value = $("#" + search).val();
+                                for (i in mylist) {
+                                    if (mylist[i].indexOf(old_value) >= 0) {
+                                        carlist[n++] = mylist[i];
+                                    }
+                                }
+                                if (carlist.length == 0) {
+                                    autoNode.hide();
+                                    return;
+                                }
+                                autoNode.empty();  //清空上次的记录
+                                for (i in carlist) {
+                                    var wordNode = carlist[i];   //弹出框里的每一条内容
+                                    var newDivNode = $("<div>").attr("id", i);    //设置每个节点的id值
+                                    newDivNode.attr("style", "font:14px/25px arial;height:25px;padding:0 8px;cursor: pointer;");
+                                    newDivNode.html(wordNode).appendTo(autoNode);  //追加到弹出框
+                                    //鼠标移入高亮，移开不高亮
+                                    newDivNode.mouseover(function () {
+                                        if (highlightindex != -1) {        //原来高亮的节点要取消高亮（是-1就不需要了）
+                                            autoNode.children("div").eq(highlightindex).css("background-color", "white");
+                                        }
+                                        //记录新的高亮节点索引
+                                        highlightindex = $(this).attr("id");
+                                        $(this).css("background-color", "#ebebeb");
+                                    });
+                                    newDivNode.mouseout(function () {
+                                        $(this).css("background-color", "white");
+                                    });
+                                    //鼠标点击文字上屏
+                                    newDivNode.click(function () {
+                                        //取出高亮节点的文本内容
+                                        var comText = autoNode.hide().children("div").eq(highlightindex).text();
+                                        highlightindex = -1;
+                                        //文本框中的内容变成高亮节点的内容
+                                        $("#" + search).val(comText);
+                                    })
+                                    if (carlist.length > 0) {    //如果返回值有内容就显示出来
+                                        autoNode.show();
+                                    } else {               //服务器端无内容返回 那么隐藏弹出框
+                                        autoNode.hide();
+                                        //弹出框隐藏的同时，高亮节点索引值也变成-1
+                                        highlightindex = -1;
+                                    }
+                                }
+                            }
+                            //点击页面隐藏自动补全提示框
+                            document.onclick = function (e) {
+                                var e = e ? e : window.event;
+                                var tar = e.srcElement || e.target;
+                                if (tar.id != search) {
+                                    if ($("#" + auto).is(":visible")) {
+                                        $("#" + auto).css("display", "none")
+                                    }
+                                }
+                            }
+                        }
+                        $(function () {
+                            old_value = $("#search_text").val();
+                            $("#search_text").focus(function () {
+                                if ($("#search_text").val() == "") {
+                                    AutoComplete("auto_div", "search_text", list);
+                                }
+                            });
+                            $("#search_text").keyup(function () {
+                                AutoComplete("auto_div", "search_text", list);
+                            });
+                        });
+
+                    }
+                }
+            });*/
+        }
+        < /srcipt>
+        < /body>
+        < /html>

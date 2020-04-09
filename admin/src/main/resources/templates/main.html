@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+
+        .layui-side-menu, .layadmin-pagetabs .layui-tab-title li:after, .layadmin-pagetabs  , .layui-layer-admin , .layadmin-side-shrink .layui-side-menu .layui-nav > .layui-nav-item >  {
+            background-color: #01AAED !important;
+        }
+
+        .layui-nav-tree , .layui-nav-tree .layui-this > a, .layui-nav-tree  , .layui-nav-tree .layui-nav-child dd.layui-this a {
+            background-color: #0066FF !important;
+        }
+
+        .layui-layout-admin .layui-logo {
+            background-color: #1E9FFF !important;
+        }
+
+        .layui-layout-admin .layui-header {
+            background-color: #1E9FFF;
+        }
+
+        .layui-layout-admin .layui-header a, .layui-layout-admin .layui-header a cite {
+            color: #1E9FFF;
+        }
+
+        .layui-layout-admin .layui-header a:hover {
+            color: #1E9FFF;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav  {
+            border-top-color: #1E9FFF;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav  {
+            border-color: transparent;
+            border-bottom-color: #1E9FFF;
+        }
+
+        .layui-layout-admin .layui-header .layui-nav , .layui-layout-admin .layui-header  {
+            background-color: #1E9FFF;
+        }
+
+        .layadmin-pagetabs .layui-tab-title li:after {
+            display: none;
+        }
+        .layui-layout-admin .layui-side {
+            top: 50px;
+            width: 220px;
+            background-color:
+                    #0066FF !important;
+            -webkit-transition: left 0.3s ease, width 0.3s ease;
+            -o-transition: left 0.3s ease, width 0.3s ease;
+            transition: left 0.3s ease, width 0.3s ease;
+        }
+    </style>
+    <title>自动化监测管理系统</title>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <!-- 导航栏 -->
+    <div class="layui-header">
+        <a href="#" class="layui-logo">
+            <span class="layui-logo-mini">SWICS</span>
+            <span class="layui-logo-lg">自动化监测管理系统</span>
+        </a>
+        <a class="side-toggle layui-layout-left" href="#">
+            <i class="layui-icon layui-icon-shrink-right"></i>
+            <i class="layui-icon layui-icon-spread-left"></i>
+        </a>
+        <ul class="layui-nav layui-layout-right">
+            <!--<li class="layui-nav-item timo-search">
+              <input class="timo-search-input" type="search" placeholder="搜索">
+              <button class="timo-search-button"><i class="fa fa-search"></i></button>
+            </li>-->
+
+            <li class="layui-nav-item">
+                <a href="#">
+                    <i class="fa fa-bell-o fa-lg"></i>
+                </a>
+            </li>
+            <li class="layui-nav-item">
+                <a class="timo-screen-full" href="#">
+                    <i class="fa layui-icon layui-icon-screen-full"></i>
+                </a>
+            </li>
+            <li class="layui-nav-item timo-nav-user">
+                <a class="timo-header-nickname" th:text="${user.nickname}">TIMO</a>
+                <div class="layui-nav-child">
+                    <div class="timo-nav-child-box">
+                        <div><a class="open-popup" data-title="个人信息" th:attr="data-url=@{/userInfo}"
+                                data-size="680,510"><!--
+              --><i class="fa fa-user-o"></i>个人信息</a></div>
+                        <div><a class="open-popup" data-title="修改密码" th:attr="data-url=@{/editPwd}"
+                                data-size="456,350"><!--
+              --><i class="fa fa-lock" style="font-size:17px;width:12px;"></i>修改密码</a></div>
+                        <div><a th:href="@{/logout}"><i class="fa fa-power-off"></i>退出登录</a></div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!--<div class="layui-side-user">
+                <img class="layui-side-user-avatar open-popup" th:attr="data-url=@{/userInfo}" data-size="680,464"
+                     th:src="@{'/system/user/picture?p='+${user.picture}}" alt="头像">
+                <div>
+                    <p class="layui-side-user-name" th:text="${user.nickname}">SWICS</p>
+                    <p class="layui-side-user-designation">在线</p>
+                </div>
+            </div>-->
+
+
+            <div id="navBarId" ></div>
+            <!-- 导航区域 -->
+           <!-- <ul class="layui-nav layui-nav-tree" lay-filter="layui-nav-side">
+                <li class="layui-nav-item" th:each="item:${treeMenu}">
+                    <a href="javascript:;" th:attr="lay-url=${item.value.url}"><i th:class="${item.value.icon}"></i><span class="layui-nav-title" th:text="${item.value.title}">一级菜单</span></a>
+                    <dl class="layui-nav-child" th:if="${item.value.children.size()}">
+                        <dd th:each="sItem:${item.value.children}">
+                            <a href="javascript:;" th:attr="lay-url=${sItem.value.url}"><span class="layui-nav-title" th:text="${sItem.value.title}">二级菜单</span></a>
+                            <dl class="layui-nav-child" th:if="${sItem.value.children.size()}">
+                                <dd th:each="tItem:${sItem.value.children}">
+                                <a href="javascript:;" th:attr="lay-url=${tItem.value.url}"><span class="layui-nav-title" th:text="${tItem.value.title}">三级菜单</span></a>
+                                    &lt;!&ndash;<dl class="layui-nav-child" th:if="${sItem.value.children.size()}">
+                                        <dd th:each="tItem:${sItem.value.children}">
+                                            <a href="javascript:;" th:attr="lay-url=${tItem.value.url}"><span class="layui-nav-title" th:text="${tItem.value.title}">四级菜单</span></a>
+                                            <dl class="layui-nav-child" th:if="${sItem.value.children.size()}">
+                                                <dd th:each="tItem:${sItem.value.children}">
+                                                    <a href="javascript:;" th:attr="lay-url=${tItem.value.url}"><span class="layui-nav-title" th:text="${tItem.value.title}">五级菜单</span></a>
+                                                </dd>
+                                            </dl>
+                                        </dd>
+                                    </dl>&ndash;&gt;
+                                </dd>
+                            </dl>
+                        </dd>
+                    </dl>
+                </li>
+            </ul>-->
+        </div>
+    </div>
+    <!-- 主体区域 -->
+    <div class="layui-body layui-tab layui-tab-brief" lay-allowclose="true" lay-filter="iframe-tabs">
+        <!-- 标签栏 -->
+        <ul class="layui-tab-title"></ul>
+        <!-- 内容区域 -->
+        <div class="layui-tab-content"></div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+
+<!--$.ajax({
+    url: '/tree',
+    dataType: 'json',
+    success: function (json) {-->
+
+<script>
+    // 导航菜单的间隔像素
+    var menuCell = 5;
+
+    layui.use('element', function () {
+        var element = layui.element;
+        var $ = layui.jquery;
+        var url ="";
+
+        $.ajax({
+            url: '/tree',
+            dataType: 'json',
+            success: function (data) {
+
+                var liStr = "";
+                // 遍历生成主菜单
+                for (var i = 0; i < data.length; i++) {
+                    //console.log("&ndash;&gt; "+JSON.stringify(data[i]));
+                    // 判断是否存在子菜单
+                    if (data[i].children != null && data[i].children.length > 0) {
+
+                        liStr += "<li class=\"layui-nav-item\">" +
+                            "<a class=\"\" href=\"javascript:;\" lay-url=\"" + data[i].url + "\"><i class='layui-icon' >" + data[i].icon + "</i > <span class=\"layui-nav-title\">" + data[i].title + "</span></a>\n" +
+                            "<dl class=\"layui-nav-child\">\n";
+                        // 遍历获取子菜单
+                        for (var k = 0; k < data[i].children.length; k++) {
+                            liStr += getChildMenu(data[i].children[k], 0);
+                        }
+                        liStr += "</dl></li>";
+                    } else {
+                        if(data[i].title == "主页"){
+                            liStr += "<li id=\"nav li\" class=\"layui-nav-item\"><a class=\"\" lay-url=\"" + data[i].url + "\"><i class='layui-icon' >" + data[i].icon + "</i > <span class=\"layui-nav-title\">" + data[i].title + "</span></a></li>";
+                            url =data[i].url
+                        }else{
+                            liStr += "<li class=\"layui-nav-item\"><a class=\"\" lay-url=\"" + data[i].url + "\"><i class='layui-icon' >" + data[i].icon + "</i > <span class=\"layui-nav-title\">" + data[i].title + "</span></a></li>";
+                        }
+
+                    }
+                }
+                ;
+
+                $("#navBarId").html("<ul class=\"layui-nav layui-nav-tree\"  lay-filter=\"layui-nav-side\">\n" + liStr + "</ul>");
+                element.init();
+                tabs(url);
+            }
+        });
+
+
+
+               /* 新建或切换标签栏 */
+        var tabs = function (url) {
+            var item = $('[lay-url="' + url + '"]');
+            if (url !== undefined && url !== '#' && item.length > 0) {
+                var bootLay = $('[lay-id="' + url + '"]');
+                if (bootLay.length === 0) {
+                    var title = item.attr("lay-icon") === 'true' ? item.html()
+                        : item.children(".layui-nav-title").text();
+                    var iframeUrl = (window.location.pathname + url).replace('//','/');
+                    element.tabAdd('iframe-tabs', {
+                        title: title
+                        , content: '<iframe src="' + iframeUrl + '" frameborder="0" class="layui-layout-iframe"></iframe>'
+                        , id: url
+                    });
+                }
+                element.tabChange('iframe-tabs', url);
+            }
+        };
+
+
+
+
+
+
+
+
+    });
+
+    // 递归生成子菜单
+    function getChildMenu(subMenu, num) {
+        num++;
+        var subStr = "";
+        if (subMenu.children != null && subMenu.children.length > 0) {
+            subStr += "<dd><ul><li class=\"layui-nav-item\" ><a style=\"margin-Left:" + num * menuCell + "px\" class=\"\" href=\"javascript:;\" lay-url=\"" + subMenu.url + "\"><i class='layui-icon' >" + subMenu.icon + "</i > <span class=\"layui-nav-title\">" + subMenu.title + "</span></a>" +
+                "<dl class=\"layui-nav-child\">\n";
+            for (var j = 0; j < subMenu.children.length; j++) {
+                subStr += getChildMenu(subMenu.children[j], num);
+            }
+            subStr += "</dl></li></ul></dd>";
+        } else {
+            subStr += "<dd><a style=\"margin-Left:" + num * menuCell + "px\" lay-url=\"" + subMenu.url + "\"><i class='layui-icon' >" + subMenu.icon + "</i> <span class=\"layui-nav-title\"><span class=\"layui-nav-title\">" + subMenu.title + "</span></span></a></dd>";
+        }
+        return subStr;
+    }
+
+
+
+
+</script>
+
+</body>
+</html>

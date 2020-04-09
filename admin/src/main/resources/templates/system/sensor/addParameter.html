@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 358px;
+            height: 130px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .dict-value:hover,
+        .dict-value:hover .control {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .control {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .dict-value .control button {
+            margin: 0;
+            border-color: #ffffff;
+        }
+
+        .dict-value .control button:hover {
+            border-color: #888888;
+        }
+
+        .dict-value .control button .fa {
+            margin-right: 4px;
+            color: #888888;
+        }
+
+        .dict-value .control .field-order .fa {
+            margin: 0;
+        }
+
+        .dict-value .control .field-order.active {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .content {
+            height: 95px;
+            padding: 2px 0;
+            overflow: auto;
+        }
+
+        .dict-value .content .dict-option {
+            margin: 0;
+            padding: 2px 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-indent: 4px;
+            font-size: 14px;
+        }
+
+        .dict-value .content .dict-option:hover {
+            background-color: rgba(1, 170, 237, 0.17);
+        }
+
+        .dict-value .content .dict-option.active {
+            background-color: rgba(1, 170, 237, 0.37);
+            font-weight: bold;
+        }
+
+        .dict-value .content .dict-option.error {
+            background-color: rgba(255, 16, 0, 0.41);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/sensor/saveParameter}">
+        <input type="hidden" name="SensourId" th:if="${SensourId}" th:value="${SensourId}"/>
+        <input type="hidden" name="id" th:if="${parameter}" th:value="${parameter.id}"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">K</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="k" th:value="${parameter?.k}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">F0</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="f0" th:value="${parameter?.f0}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">KT</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="kt" th:value="${parameter?.kt}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">T0</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="t0" th:value="${parameter?.t0}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">B</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="b" th:value="${parameter?.b}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">C</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="c" th:value="${parameter?.c}">
+            </div>
+        </div>
+        <div class="layui-form-item timo-finally">
+            <button class="layui-btn ajax-submit"><i class="fa fa-check-circle"></i> 保存</button>
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery;
+
+        var data = layui.jquery('input[name= id]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            $(document).on('click', '#addSensor', function () {
+                layer.open({
+                    type: 2,
+                    witdh: 543,
+                    height: 338,
+                    content: ['/system/acquisitionInstrument/toAcquisitionSensor?cquisitionId=' + cquisitionId + '&passagewayNumber=' + passagewayNumber, 'no'] //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                });
+            });
+        }
+    });
+</script>
+</body>
+</html>

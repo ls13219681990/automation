@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body>
+<div class="timo-detail-page">
+    <div class="timo-detail-title">基本信息</div>
+    <table class="layui-table timo-detail-table">
+        <tbody>
+        <tr>
+            <th width='100px'>线路ID</th>
+            <td th:text="${lineData.id}"></td>
+            <th width='100px'>线路名称</th>
+            <td th:text="${lineData.name}"></td>
+        </tr>
+        <tr>
+            <th width='100px'>标段编码</th>
+            <td th:text="${lineData.No}"></td>
+
+        </tr>
+        <tr>
+            <th>起始里程</th>
+            <td th:text="${lineData.startMileage}"></td>
+            <th>结束里程</th>
+            <td th:text="${lineData.endMileage}"></td>
+        </tr>
+        <tr>
+            <th>建设单位</th>
+            <td th:text="${lineData.buildCompany}"></td>
+            <th>设计单位</th>
+            <td th:text="${lineData.designCompany}"></td>
+        </tr>
+        <tr>
+
+            <th>线路概况</th>
+            <td th:text="${lineData.lineSurvey}"></td>
+        </tr>
+        <tr>
+            <th>备注</th>
+            <td th:text="${lineData.remarks}" colspan="4"></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+<script th:replace="/common/template :: script"></script>
+</body>
+</html>

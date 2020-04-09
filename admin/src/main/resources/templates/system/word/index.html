@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="http://www.xdocin.com/xdoc.js"></script>
+    <script type="text/javascript" src="http://www.xdocin.com/baiduTemplate.js"></script>
+    <style>
+        .head{
+            font-size: 29px;
+            display: block;
+        }
+        .content{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<input type="button" onclick="gen('pdf')" value="生成PDF"/>
+<input type="button" onclick="gen('docx')" value="生成Word"/>
+
+
+
+
+<script id="tmpl" type="text/html">
+    <xdoc version="A.3.0">
+        <body>
+        <para heading="1" lineSpacing="28">
+            <text class="head" valign="center" fontName="标宋" fontSize="29"><%=title%></text>
+        </para>
+        <para>
+            <img  src="<%=img%>" sizeType="autosize"/>
+        </para>
+        <para lineSpacing="9">
+            <text class="content" fontName="仿宋" fontSize="18"><%=content%></text>
+        </para>
+        </body>
+
+        <table border="1" width="1200">
+            <tr align="center">
+                <td colspan="1">工程名称</td>
+                <td colspan="7">成都轨道交通8号线一期工程庆安站附属</td>
+            </tr>
+            <tr align="center">
+                <td colspan="1">施工单位</td>
+                <td colspan="4">中铁一局</td>
+                <td colspan="2">上次观测日期</td>
+                <td colspan="1">2019-01-01</td>
+            </tr>
+            <tr align="center">
+                <td colspan="1">监理单位</td>
+                <td colspan="4">上海建科工程咨询有限公司</td>
+                <td colspan="2">本次观测日期</td>
+                <td colspan="1">2019-7-31</td>
+            </tr>
+            <tr align="center">
+                <td colspan="1">仪器规格</td>
+                <td colspan="7">Trimble DiNi03/738881</td>
+
+            </tr>
+
+
+            <tr align="center">
+                <td rowspan="2">检测项目</td>
+                <td rowspan="2">测点编号</td>
+                <td>初始测试值</td>
+                <td >上次测试值</td>
+                <td >本次测试值</td>
+                <td >变形量</td>
+                <td >累计值</td>
+                <td rowspan="2">测点编号</td>
+            </tr>
+            <tr align="center">
+                <td>(mm)</td>
+                <td>(mm)</td>
+                <td>(mm)</td>
+                <td>(mm)</td>
+                <td>(mm)</td>
+                <td>(mm)</td>
+            </tr>
+            <!--<tr align="center">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+
+            </tr>
+            <tr align="center">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+
+            </tr>
+            <tr align="center">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+
+            </tr>
+            <tr align="center">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+
+            </tr>
+            <tr align="center">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+
+            </tr>
+            <tr align="center">
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+
+            </tr>-->
+            <!--<tr align="center">
+                <td >最大值</td>
+                <td>5</td>
+                <td>6</td>
+                <td>7</td>
+                <td>最大值</td>
+                <td>5</td>
+                <td>6</td>
+                <td>7</td>
+            </tr>-->
+            <tr align="center">
+                <td  colspan="8">备注：1111111111111111111111111111111111111111111111111111</td>
+            </tr>
+        </table>
+    </xdoc>
+</script>
+<script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.js"></script>
+<script type="text/javascript">
+    var type="docx";//pdf
+    var data = {
+        title: "导出"+type+"文件",
+        img: "http://www.wordlm.com/uploads/allimg/130101/1_130101000405_1.jpg",
+        content: "我这样就可以导出"+type+"格式的文件了，是不是很方便",
+    };
+    function renderTemplate(){
+        var template=$("#tmpl").html();
+        var html=template.replace(/<%=title%>/,data.title)
+            .replace(/<%=img%>/,data.img)
+            .replace(/<%=content%>/,data.content);
+        $("body").append(html);
+    }
+    renderTemplate();
+    function gen(type) {
+        XDoc.to(baidu.template('tmpl', data), type, {}, "_blank");
+    }
+
+</script>
+</body>
+</html>

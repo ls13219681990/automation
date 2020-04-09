@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 358px;
+            height: 130px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .dict-value:hover,
+        .dict-value:hover .control {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .control {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .dict-value .control button {
+            margin: 0;
+            border-color: #ffffff;
+        }
+
+        .dict-value .control button:hover {
+            border-color: #888888;
+        }
+
+        .dict-value .control button .fa {
+            margin-right: 4px;
+            color: #888888;
+        }
+
+        .dict-value .control .field-order .fa {
+            margin: 0;
+        }
+
+        .dict-value .control .field-order.active {
+            border-color: #C9C9C9;
+        }
+
+        .dict-value .content {
+            height: 95px;
+            padding: 2px 0;
+            overflow: auto;
+        }
+
+        .dict-value .content .dict-option {
+            margin: 0;
+            padding: 2px 0;
+            display: block;
+            width: 100%;
+            border: none;
+            text-indent: 4px;
+            font-size: 14px;
+        }
+
+        .dict-value .content .dict-option:hover {
+            background-color: rgba(1, 170, 237, 0.17);
+        }
+
+        .dict-value .content .dict-option.active {
+            background-color: rgba(1, 170, 237, 0.37);
+            font-weight: bold;
+        }
+
+        .dict-value .content .dict-option.error {
+            background-color: rgba(255, 16, 0, 0.41);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/acquisitionInstrument/add}">
+        <input type="hidden" name="id" th:if="${acquisition}" th:value="${acquisition.id}"/>
+        <input type="hidden" name="netWork" th:if="${acquisition}" th:value="${acquisition?.netWorkId}"/>
+        <input type="hidden" name="intervalstate" th:if="${acquisition}" th:value="${acquisition?.intervalstate}"/>
+        <input type="hidden" name="communicationProtocolValue" th:if="${acquisition}" th:value="${acquisition?.communicationProtocol}"/>
+        <input type="hidden" name="edit" th:if="${edit}" th:value="${edit}"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">采集仪名称</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="name" placeholder="请输入采集仪名称"
+                       th:value="${acquisition?.name}">
+            </div>
+            <label class="layui-form-label ">采集仪编号</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="No" placeholder="请输入采集仪编号" th:value="${acquisition?.No}">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">通道数量</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="passagewayNumber" placeholder="请输入通道数量"
+                       th:value="${acquisition?.passagewayNumber}">
+            </div>
+            <label class="layui-form-label ">4G网络</label>
+            <div class="layui-input-inline">
+                <select class="layui-form" name="netWorkId" id="xm" lay-verify="required" lay-filter="xmFilter"
+                        th:value="${acquisition?.netWorkId}">
+                    <!--                <select  name="netWorkId1" id="xm1" th:value="${acquisition?.netWorkId}">-->
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">安装地点</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="installationSite" placeholder="请输入安装地点"
+                       th:value="${acquisition?.installationSite}">
+            </div>
+
+
+            <label class="layui-form-label">安装时间</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="installationTime" name="installationTime"
+                       placeholder="yyyy-MM-dd" th:value="${acquisition?.installationTime}">
+
+                <!--<input class="layui-input" id="time" name="startTime" autocomplete="off"
+                       lay-key="1" height="20px" th:value="${acquisition?.installationTime}">-->
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label ">通讯协议</label>
+            <div class="layui-input-inline">
+
+                <select class="layui-form" name="communicationProtocol" id="communicationProtocol" lay-verify="required" lay-filter="xmFilter"
+                        th:value="${acquisition?.communicationProtocol}">
+                    <!--                <select  name="netWorkId1" id="xm1" th:value="${acquisition?.netWorkId}">-->
+                    <option value=""></option>
+                </select>
+
+
+                <!--<select class="layui-form" name="communicationProtocol" id="communicationProtocol"></select>
+                &lt;!&ndash;mo-selected="${menu?.type}"&ndash;&gt;-->
+            </div>
+            <label class="layui-form-label ">时间间隔</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="intervalTime"
+                       th:value="${acquisition?.intervalTime}">
+            </div>
+
+        </div>
+
+        <div class="layui-form-item timo-finally">
+            <button class="layui-btn ajax-submit"><i class="fa fa-check-circle"></i> 保存</button>
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<!--<script>
+    layui.use('laydate', function () {
+        var laydate = layui.laydate;
+
+        //执行一个laydate实例
+        laydate.render({
+            id: "startTime", elem: "#startTime"
+        });
+    });
+</script>-->
+<script>
+    layui.use(['form', 'upload', 'layer'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var laydate = layui.laydate;
+
+        laydate.render({
+            elem: '#installationTime'
+            , type: 'datetime'
+        });
+        var edit = layui.jquery('input[name=edit]').val();
+        var index = 1;
+        var value = layui.jquery('input[name=communicationProtocolValue]').val();
+        $.ajax({
+            url: "/system/dict/getDict?label=" + 'COMMUNICATION_PROTOCOL',
+            async: false,
+            success: function (data) {
+
+
+                for (var key in data) {
+
+                    if(edit != null && edit != "" && edit != undefined){
+                        if (key === value) {
+                            $("#communicationProtocol").append("<option id=" + key + "  value='" + key + "' selected='' >" + data[key] + "</option>");
+                            // var domId = "#"+sid;
+                            // $(domId).attr('checked',true);
+                        } else {
+                            $("#communicationProtocol").append("<option id=" + key + " value='" + key + "'>" + data[key] + "</option>");
+                        }
+                    }else{
+                       /* if(index =1){
+                            $("#communicationProtocol").append("<option id=" +  + " value='" + key + "'+'style='color: #a0abb6' '>" + "请选择" + "</option>");
+                        }*/
+                        $("#communicationProtocol").append("<option id=" + key + " value='" + key + "'>" + data[key] + "</option>");
+                    }
+                    index++;
+                }
+                form.render();
+            }
+        });
+
+
+        var networkStr = $('input[name=netWork]').val();
+        var ns = 0;
+        if (networkStr !== undefined && networkStr !== null && networkStr !== '') {
+            ns = Number(networkStr);
+        }
+
+        $.ajax({
+            url: "/system/netWork/findAll",
+            async: false,
+            success: function (data) {
+
+
+                $.each(data, function (index, item) {
+
+                        if (item === undefined || item === null || item === '') {
+                            return true;
+                        }
+                        var registerSSID = item.registerSSID;
+                        var installationSite = item.installationSite;
+                        var sid = item.id;
+
+                            if (sid === ns) {
+                                $("#xm").append("<option id=" + sid + "  value='" + sid + "' selected='' >" + installationSite + ":" + registerSSID + "</option>");
+                                // var domId = "#"+sid;
+                                // $(domId).attr('checked',true);
+                            } else {
+                                $("#xm").append("<option id=" + sid + " value='" + sid + "'>" + installationSite + ":" + registerSSID + "</option>");
+                            }
+                    }
+                );
+
+                form.render();
+            }
+        });
+    });
+
+</script>
+<!--<script>-->
+<!--    layui.use(['form', 'upload', 'layer'], function () {-->
+<!--        var $ = layui.jquery;-->
+<!--        var form = layui.form;-->
+
+
+<!--        var ns = Number(layui.jquery('input[name=netWork]').val())-->
+
+<!--        $.ajax({-->
+<!--            url: "/system/netWork/findAll",-->
+<!--            success: function (data) {-->
+<!--                console.log(data);-->
+<!--                if (data != "null") {-->
+<!--                    $.each(data, function (index, item) {-->
+<!--                            console.log("Option的Id" + item.id);-->
+<!--                            if (item.id == ns) {-->
+<!--                                $('#xm').append(new Option(item.registerSSID, item.id).setAttribute("selected", true));// 下拉菜单里添加元素-->
+<!--                            } else {-->
+<!--                                $('#xm').append(new Option(item.registerSSID, item.id));// 下拉菜单里添加元素-->
+<!--                            }-->
+<!--                        }-->
+<!--                    );-->
+<!--                }-->
+<!--                form.render("select", 'xmFilter');-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+
+<!--</script>-->
+</body>
+</html>

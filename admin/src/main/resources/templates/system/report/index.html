@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 报告列表</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-form timo-compile">
+        <div class="layui-card-body">
+            <input type="hidden" name="id" th:if="${templateId}" th:value="${templateId}" id="id"/>
+
+            <div class="layui-row timo-card-screen">
+                <div class="pull-left layui-form-pane timo-search-box">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label ">线路</label>
+                        <div class="layui-input-block">
+                            <select class="layui-form" name="line" id="line" lay-verify="required" placeholder="请先选择线路"
+                                    lay-filter="lineFilter">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label ">标段</label>
+                        <div class="layui-input-block">
+                            <select class="layui-form" name="bidSection" id="bidSection" lay-verify="required"
+                                    lay-filter="bidSectionFilter">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label ">工点</label>
+                        <div class="layui-input-block">
+                            <select class="layui-form" name="workSpot" id="workSpot" lay-verify="required"
+                                    lay-filter="workSpotFilter" lay-search="">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label">报告名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="templateName" placeholder="请输入报告名称" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label">开始时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="startTime" id="startTime" placeholder="报告录入开始时间" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">结束时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="endTime" id="endTime" placeholder="报告录入结束时间" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="search" class="layui-btn" lay-submit="" lay-filter="search"><i
+                                class="layui-icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="timo-table-wrap">
+            <div class="timo-detail-page">
+                <table class="layui-table" id="report" lay-filter="report"></table>
+                <script id="titleTpl" type="text/html">
+                    <!--<a href="http://www.xdocin.com/xdoc?_func=to&_format=html&_cache=1&_xdoc=http://www.xdocin.com/demo/demo.docx" target="_blank" rel="nofollow">查看</a>-->
+
+                    <a href="/system/report/downWordFile/{{d.id}}"><i class="layui-icon"></i>导出报告</a>
+                    <!-- <a id="del"  th:attr="data-id=@{'{{d.id}}'}">删除</a>-->
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table', 'upload'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery,
+            laydate = layui.laydate,
+            upload = layui.upload, startTime, endTime, workSpotId;
+
+
+        laydate.render({
+            id: "startTime", elem: "#startTime", trigger: 'click', done: function (value, date) {
+                startTime = value;
+            }
+        });
+        laydate.render({
+            id: "endTime", elem: "#endTime",
+            trigger: 'click', done: function (value, date) {
+                endTime = value;
+            }
+        });
+
+
+        var id = '';
+        table.render({
+            elem: '#report',
+            method: 'get',
+            //屏幕高度-合适的高度
+            page: true,
+            loading: true,
+            cellMinWidth: 90, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            url: '/system/report/findByWorkSpotId?workSpotId=' + id,  //数据地址
+            autoSort: true,
+            maxWidth: 300,
+            cols:
+                [
+                    [
+                        {field: 'name', title: '报告名称', width: '25%', align: 'center', sort: true},
+                        {field: 'inputId', title: '录入人', width: '25%', align: 'center', sort: true},
+                        {field: 'inputTime', title: '录入时间', width: '25%', align: 'center', sort: true},
+                        {field: '', title: '操作', width: '25%', templet: '#titleTpl', align: 'center'}
+                    ]
+                ], id: 'report', done: function (res) {
+                tdTitle();
+            }
+        });
+
+        $.ajax({
+            url: "/system/lineInfo/lineInfoAllDataSelect",
+            async: false,
+            success: function (data) {
+                $.each(data.data, function (index, item) {
+
+                        if (item === undefined || item === null || item === '') {
+                            return true;
+                        }
+
+                        if (item.id === 0) {
+                            $("#line").append("<option  value='" + item.id + "' selected=''>" + item.name + "</option>");
+                        } else {
+                            $("#line").append("<option  value='" + item.id + "'>" + item.name + "</option>");
+                        }
+                    }
+                );
+                form.render('select');
+            }
+        });
+
+
+        $.ajax({
+            url: "/system/bidSection/findByLineIdSelect",
+            async: false,
+            success: function (data) {
+                $.each(data.data, function (index, item) {
+
+                        if (item === undefined || item === null || item === '') {
+                            return true;
+                        }
+
+                        if (item.id === 0) {
+                            $("#bidSection").append("<option  value='" + item.id + "' selected=''>" + item.name + "</option>");
+                        } else {
+                            $("#bidSection").append("<option  value='" + item.id + "'>" + item.name + "</option>");
+                        }
+                    }
+                );
+                form.render('select');
+            }
+        });
+        $.ajax({
+            url: "/system/workSpot/userWorkSpotDataSelect",
+            async: false,
+            success: function (data) {
+                $.each(data.data, function (index, item) {
+
+                        if (item === undefined || item === null || item === '') {
+                            return true;
+                        }
+                        if (item.id === 0) {
+                            $("#workSpot").append("<option  value='" + item.id + "' selected=''>" + item.name + "</option>");
+                        } else {
+                            $("#workSpot").append("<option  value='" + item.id + "'>" + item.name + "</option>");
+                        }
+                    }
+                );
+                form.render('select');
+            }
+        });
+
+        form.on("select(lineFilter)", function (data) {
+            $("#bidSection").empty();
+            console.log(data)
+            $.ajax({
+                url: "/system/bidSection/findByLineId?lineInfoId=" + data.value,
+                async: false,
+                success: function (data) {
+                    $.each(data.data, function (index, item) {
+
+                            if (item === undefined || item === null || item === '') {
+                                return true;
+                            }
+                            $("#bidSection").append("<option  value='" + item.id + "'>" + item.name + "</option>");
+                        }
+                    );
+
+                    form.render('select');
+                    /* form.render('select', 'lineFilter');*/
+                    /*form.render();*/
+                }
+            });
+        });
+
+
+        form.on("select(bidSectionFilter)", function (data) {
+            $("#workSpot").empty();
+            console.log(data)
+            $.ajax({
+                url: "/system/workSpot/userWorkSpotData?bidSectionId=" + data.value,
+                async: false,
+                success: function (data) {
+                    $.each(data.data, function (index, item) {
+
+                            if (item === undefined || item === null || item === '') {
+                                return true;
+                            }
+                            $("#workSpot").append("<option  value='" + item.id + "'>" + item.name + "</option>");
+                        }
+                    );
+                    form.render('select');
+                }
+            });
+        });
+
+
+        form.on("select(workSpotFilter)", function (data) {
+            var bidSectionId = $("#bidSection").val();
+            workSpotId = data.value;
+            table.reload('report', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+                , where: {//这里传参 向后台
+                    workSpotId: workSpotId,
+                    bidSectionId:bidSectionId
+                    //可传多个参数到后台... ，分隔
+                }
+                , url: '/system/report/findByWorkSpotId'//后台做模糊搜索接口路径
+                , method: 'post'
+            });
+            return false;
+        });
+
+        form.on('submit(search)', function (data) {
+            if (workSpotId === undefined || workSpotId === null || workSpotId === '') {
+                layer.msg('查询前先选择工点');
+                return;
+            }
+            var name = layui.jquery('input[name= templateName]').val();
+
+
+            if ((name === undefined || name === null || name === '') && (startTime === undefined || startTime === null || startTime === '') && (endTime === undefined || endTime === null || endTime === '')) {
+                layer.msg('请输入报告名称或者时间区间进行查询');
+                return;
+            } else {
+                table.reload('report', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {//这里传参 向后台
+                        name: name,
+                        startDate: startTime,
+                        endDate: endTime,
+                        workSpotId: workSpotId
+                        //可传多个参数到后台... ，分隔
+                    }
+                    , url: '/system/report/findReportByNameOrDate'//后台做模糊搜索接口路径
+                    , method: 'post'
+                });
+            }
+            return false;//false：阻止表单跳转 true：表单跳转
+        })
+
+        $(document).on('click', '#del', function () {
+            var id = $(this).attr("data-id");
+
+            /*var msg;*/
+            $.ajax({
+                url: "/system/report/edit?id=" + id,
+                success: function (result) {
+                    if (result.code === 200) {
+                        layer.msg(result.msg, {
+                            icon: 1,
+                            time: 3000,
+                            end: function () {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                    }
+                }
+            });
+        });
+    });
+
+
+</script>
+</body>
+</html>

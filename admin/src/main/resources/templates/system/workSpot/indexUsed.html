@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+
+        .layui-table-cell {
+            height: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-card">
+    <input type="hidden" name="nodeName" th:if="${workData}" th:value="${workData.name}"/>
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 工点数据</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+        <div class="timo-detail-page">
+            <table class="layui-table" id="workSpotData" lay-filter="workSpotData"></table>
+        </div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        var data = layui.jquery('input[name= nodeName]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            table.render({
+                elem: '#workSpotData',
+                method: 'get',
+                page: true,
+                loading: true,
+                url: '/system/workSpot/data?nodeName=' + data,  //数据地址
+                //page:true,
+                cols:
+                    [
+                        [
+                            {field: 'measuringSpotName', title: '测点名称',width:'10%',align:'center', sort: true},
+                         /*   {field: 'measuringSpotType', title: '测点类型'},*/
+                            {field: 'measuringSpotSensorNo', title: '传感器编号',width:'%17',align:'center', sort: true},
+                            {field: 'measuringSpotOriginalValue', title: '传感器读数',width:'%17',align:'center', sort: true},
+                            {field: 'measuringSpotValue', title: '测点值',width:'10%',align:'center', sort: true},
+                            {field: 'measuringSpotDifference', title: '变化量',width:'10%',align:'center'},
+                            /*{field: 'easurePattern', title: '测量模式',},*/
+                            {field: 'dayRateValue', title: '日变化速率',width:'10%',align:'center'},
+                            {field: 'measuringSpotAccumulationValue', title: '累计变化量',width:'10%',align:'center'},
+                            /*{field: 'value', title: '传感器编号',  fixed: 'left'},*/
+                            {field: 'receiveTime', title: '接收时间',width:'%16',align:'center'},
+
+                        ]
+                    ]   ,id: 'workSpotData', done: function (res) {
+                    tdTitle();
+                }
+            });
+        }
+    });
+
+</script>
+</body>
+</html>

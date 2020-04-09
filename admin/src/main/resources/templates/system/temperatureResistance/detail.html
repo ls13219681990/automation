@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body>
+<div class="timo-detail-page">
+    <input type="hidden" name="id" th:if="${id}" th:value="${id}"/>
+    <table id="acquisitionTable" lay-filter="test"></table>
+
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        var data = layui.jquery('input[name= id]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            //执行渲染
+            table.render({
+                elem: '#acquisitionTable',
+                method: 'get',
+                height: 'full-50', //屏幕高度-合适的高度
+                width: 800,  //宽度
+                url: '/system/temperatureResistance/temperatureResistanceData?id=' + data,  //数据地址
+                page: false,
+                loading: true,
+                cols:
+                    [
+                        [
+                            {field: '', type: 'numbers', title: '序号', width: 150,align:'center'},
+                            {field: 'temp', title: '温度', width: 150,align:'center', sort: true},
+                            {field: 'tempResist', title: '电阻', width: 150,align:'center', sort: true},
+
+                        ]
+                    ],id: 'acquisitionTable', done: function (res) {
+                    tdTitle();
+                }
+            });
+        }
+    });
+
+</script>
+</body>
+</html>

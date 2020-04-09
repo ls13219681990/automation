@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .Connect {
+            width: 20px;
+            height: 20px;
+            /*float: left;*/
+            background: #6fee1d;
+            -moz-border-radius: 10px;
+            -webkit-border-radius: 10px;
+            border-radius: 10px;
+            margin:0 auto;
+        }
+
+        .wait {
+            width: 20px;
+            height: 20px;
+            /*float: left;*/
+
+            background: #888888;
+            -moz-border-radius: 10px;
+            -webkit-border-radius: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 4G模块管理</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row timo-card-screen">
+            <div class="pull-left layui-form-pane timo-search-box">
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">4G网络标识</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="registerSSID" th:value="${param.No}" placeholder="4G网络标识"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button id="search" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="pull-right screen-btn-group">
+                <button class="layui-btn open-popup" data-title="添加4G网络" th:attr="data-url=@{/system/netWork/add}"
+                        data-size="500,300">
+                    <i class="fa fa-plus"></i> 添加
+                </button>
+            </div>
+        </div>
+        <div class="timo-table-wrap">
+            <div class="timo-detail-page">
+                <table class="layui-table" id="userNetWork" lay-filter="userNetWork"></table>
+
+                <script type="text/html" id="checkboxTpl">
+                    {{#  if(d.connectStatus == 1){ }}
+                        <div class="Connect"> </div>
+                    {{#  } else { }}
+                        <div class="wait" ></div>
+                    {{#  } }}
+                </script>
+                <script id="titleTpl" type="text/html">
+                    <a class="open-popup" data-title="编辑4G模块" th:attr="data-url=@{'/system/netWork/edit/{{d.id}}'}"
+                       data-size="615,320" href="#">编辑</a>
+                    <a id="del"  th:attr="data-id=@{'{{d.id}}'}">删除</a>
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+        table.render({
+            elem: '#userNetWork',
+            method: 'get',
+            //屏幕高度-合适的高度
+            page: true,
+            loading: true,
+            cellMinWidth: 90, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            url: '/system/netWork/userNetWork',  //数据地址
+            autoSort: true,
+
+            maxWidth: 300,
+            cols:
+                [
+                    [
+                        {field: 'registerSSID', title: '注册标识', width: '25%',align:'center', sort: true},
+                        {field: 'name', title: '模块名称', width: '25%',align:'center', sort: true},
+                        {field: 'installationSite', title: '安装地点', width: '25%',align:'center', sort: true},
+                        {field: 'lock', title: '连接状态', width: '10%', templet: '#checkboxTpl',align:'center', sort: true},
+                        {field: '', title: '操作', width: '15%', templet: '#titleTpl',align:'center'}
+                    ]
+                ], id: 'userNetWork', done: function (res) {
+                tdTitle();
+            }
+        });
+        //监听锁定操作
+        form.on('checkbox(lockDemo)', function (obj) {
+            layer.tips(this.value + ' ' + this.name + '：' + obj.elem.checked, obj.othis);
+        });
+
+        //监听提交 lay-filter="search"
+        form.on('submit(search)', function (data) {
+
+            var registerSSID = layui.jquery('input[name= registerSSID]').val();
+
+
+            //执行重载
+            table.reload('userNetWork', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+                , where: {//这里传参 向后台
+                    name: registerSSID
+                    //可传多个参数到后台... ，分隔
+                }
+                , url: '/system/netWork/userNetWork?registerSSID=' + registerSSID//后台做模糊搜索接口路径
+                , method: 'post'
+            });
+            return false;//false：阻止表单跳转 true：表单跳转
+        });
+
+        $(document).on('click', '#del', function () {
+            var id = $(this).attr("data-id");
+
+            layer.confirm('是否确认删除', {icon: 3, title: '提示'}, function (index) {
+                $.ajax({
+                    url: '/system/netWork/del?id=' + id,
+                    success: function (result) {
+                        if (result.code === 200) {
+                            layer.msg(result.msg, {
+                                icon: 1,
+                                time: 3000,
+                                end: function () {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                        }
+                    }
+                });
+            });
+        });
+
+
+    });
+
+
+</script>
+</body>
+</html>

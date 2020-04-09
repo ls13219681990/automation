@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org"
+       xmlns:shiro="http://www.pollix.at/thymeleaf/shiro" xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 线路信息</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+        <div class="timo-detail-page">
+            <table class="layui-table" id="lineAllData" lay-filter="lineAllData"></table>
+
+            <script id="titleTpl" type="text/html">
+                <a class="open-popup" data-title="编辑线路"
+                   th:attr="data-url=@{'/system/menu/lineInfoedit?id={{d.id}}&tree=false'}" data-size="814,400" href="#">编辑</a>
+                <a id="del"  shiro:hasPermission="system:menu:delLine" th:attr="data-id=@{'{{d.id}}'}">删除</a>
+            </script>
+        </div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+
+
+
+        table.render({
+            elem: '#lineAllData',
+            method: 'get',
+            loading: true,
+            url: '/system/lineInfo/lineInfoAllData',  //数据地址
+            cellMinWidth:80, //最小宽度
+            cols:
+                [
+                    [
+                        {field: 'name', title: '线路名称',width:'12%',align:'center', sort: true},
+                        {field: 'no', title: '线路编码',width:'12%',align:'center', sort: true},
+                        {field: 'startMileage', title: '起始里程',width:'12%',align:'center', sort: true},
+                        {field: 'endMileage', title: '结束里程',width:'12%',align:'center', sort: true},
+                        {field: 'buildCompany', title: '建设单位',width:'12%',align:'center', sort: true},
+                        /*{field: 'easurePattern', title: '测量模式',},*/
+                        {field: 'designCompany', title: '设计单位',width:'12%',align:'center', sort: true},
+                        {field: 'lineSurvey', title: '线路概况',width:'12%',align:'center'},
+                        /*{field: 'value', title: '传感器编号',  fixed: 'left'},*/
+                        {field: 'remarks', title: '备注',width:'12%',align:'center'},
+                        {field: 'title', title: '操作', width: '110', templet: '#titleTpl',fixed: 'right',align:'center'}
+                    ]
+                ] ,id: 'lineAllData', done: function (res) {
+                tdTitle();
+            }
+        });
+
+        $(document).on('click', '#del', function () {
+            var id = $(this).attr("data-id");
+
+            layer.confirm('是否确认删除', {icon: 3, title: '提示'}, function (index) {
+                $.ajax({
+                    url: '/system/menu/delLine?id=' + id,
+                    success: function (result) {
+                        if (result.code === 200) {
+                            layer.msg(result.msg, {
+                                icon: 1,
+                                time: 3000,
+                                end: function () {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                        }
+                    }
+                });
+            });
+        });
+
+
+
+
+
+    });
+
+
+</script>
+</body>
+</html>

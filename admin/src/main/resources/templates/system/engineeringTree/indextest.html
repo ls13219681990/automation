@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<!--<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">-->
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+    <style>
+        .layui-col-sm10 {
+            width: 83.33333333%;
+            height: 100%;
+        }
+        .layui-col-lg10 {
+            width: 83.33333333%;
+            height: 100%;
+        }
+       .ztree * {
+           font-size: 15px;
+       }
+       .iframe-style{
+           margin-left:2px;
+           /*height: 95%;*/
+           /*margin-right: 10px;*/
+          /* margin-bottom:20px;*/
+          /* width: 83.33333333%*/
+       }
+       .timo-layout-page {
+           background-color: #eeeeee;
+           padding: 18px;
+           height:95%;
+           /*width: 100%;*/
+       }
+    </style>
+</head>
+
+<body class="timo-layout-page">
+<div class="layui-card timo-tree" th:attr="data-url=@{'/system/menu/lineTree?'+${search}}">
+    <div class="layui-card-body layui-row">
+        <div class="layui-col-lg2 layui-col-sm2">
+            <div class="layui-card timo-nav-tree">
+                <input type="hidden" class="layui-btn add-line" data-title="添加线路"
+                       th:attr="data-url=@{'/system/menu/addLineInfo'}" data-size="760,510">
+                <button class="layui-btn open-popup popup-add" data-title="添加线路" style="margin-left: 20px;margin-top: 10px"
+                        th:attr="data-url=@{'/system/menu/addLineInfo'}" data-size="760,510">
+                    <i class="fa fa-plus"></i> 添加线路
+                </button>
+                <button class="layui-btn lineAll" data-title="所有线路" style="margin-left: 20px;margin-top: 10px"
+                        th:attr="data-url=@{'/system/lineInfo/lineInfoAll'}" data-size="760,510">
+                    <i class="fa fa-plus"></i> 所有线路
+                </button>
+                <div class="layui-card-body">
+                    <ul class="ztree"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-lg10 layui-col-sm10">
+            <div class="iframe-style">
+                <iframe src="/system/lineInfo/lineInfoAll" id="iframe" name="iframe" style="width: 100%;min-height:655px;height:95%;margin-top: 6px;"
+                        frameborder=0 scrolling=no width="100%"></iframe>
+            </div>
+           <!-- <iframe id="iframe" src="/system/lineInfo/lineInfoAll" style="margin-top: 6px;"
+                    frameborder="0" scrolling="auto"></iframe>-->
+        </div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.exedit.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/engineeringTree.js}"></script>
+<script type="text/javascript">
+    $.fn.engineeringTree();
+</script>
+
+<script>
+
+
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery,
+            laydate = layui.laydate,
+            startTime, endTime;
+
+        $(document).on("click", ".lineAll", function () {
+            var url = $(this).attr("data-url");
+          document.getElementById("iframe").src = url;
+
+        });
+
+
+
+        /* 添加/修改弹出层 */
+        $(document).on("click", ".add-line", function () {
+
+            var title = $(this).attr("data-title");
+            var url = $(this).attr("data-url");
+            var size = $(this).attr("data-size");
+
+            var popup = $(this);
+            var Arrkey, reg = /^jQuery[0-9]\d*$/
+            for (var key in popup[0]) {
+                if (reg.test(key)) {
+                    Arrkey = key
+                }
+            }
+            if (Arrkey != undefined && Arrkey != null) {
+                delete popup[0][Arrkey].title;
+                delete popup[0][Arrkey].url;
+            }
+
+            if (size === undefined || size === "auto") {
+                size = ['50%', '80%'];
+            }else if (size === "max") {
+                size = ['100%', '100%'];
+            }else if (size.indexOf(',') !== -1) {
+                var split = size.split(",");
+                size = [split[0] + 'px', split[1] + 'px'];
+            }
+            window.layerIndex = layer.open({
+                type: 2,
+                title: title,
+                shadeClose: true,
+                maxmin: true,
+                area: size,
+                content: [url, 'on']
+            });
+        });
+
+
+
+
+
+
+    });
+
+
+
+
+    function reinitIframe(){
+        var iframe = document.getElementById("iframe");//id改为你的iframe的id
+        try{
+            var bHeight = iframe.contentWindow.document.body.scrollHeight;
+            var dHeight = iframe.contentWindow.document.documentElement.scrollHeight;
+            var height = Math.max(bHeight, dHeight);
+            iframe.height =  height;
+        }catch (ex){}
+    }
+    window.setInterval("reinitIframe()", 200);
+</script>
+</body>
+</html>

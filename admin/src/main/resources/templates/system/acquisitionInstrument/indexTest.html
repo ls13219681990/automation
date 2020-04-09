@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 采集仪管理</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row timo-card-screen">
+            <div class="pull-left layui-form-pane timo-search-box">
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">采集仪编号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="No" th:value="${param.No}" placeholder="请输入采集仪编号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn timo-search-btn">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="pull-right screen-btn-group">
+                <button class="layui-btn open-popup" data-title="添加采集仪" th:attr="data-url=@{/system/acquisitionInstrument/add}" data-size="744,390">
+                    <i class="fa fa-plus"></i> 添加
+                </button>
+                <!--<div class="btn-group">
+                    <button class="layui-btn">操作<span class="caret"></span></button>
+                    <dl class="layui-nav-child layui-anim layui-anim-upbit">
+                        <dd><a class="ajax-status" th:href="@{/system/acquisitionInstrument/status/ok}">启用</a></dd>
+                        <dd><a class="ajax-status" th:href="@{/system/acquisitionInstrument/status/freezed}">冻结</a></dd>
+                        <dd><a class="ajax-status" th:href="@{/system/acquisitionInstrument/status/delete}">删除</a></dd>
+                    </dl>
+                </div>-->
+            </div>
+        </div>
+        <div class="timo-table-wrap">
+            <table class="layui-table timo-table">
+                <thead>
+                <tr>
+
+                    <th class="sortable" data-field="name">采集仪名称</th>
+                    <th class="sortable" data-field="No">采集仪编号</th>
+
+                    <th class="sortable" data-field="netWorkId">4G模块ID</th>
+                    <th class="sortable" data-field="installationSite">安装地点</th>
+                    <th class="sortable" data-field="InstallationTime">安装时间</th>
+                    <th class="sortable" data-field="communicationProtocol">通讯协议</th>
+
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item:${list}">
+                    <td th:text="${item.name}">采集仪名称</td>
+                    <td th:text="${item.No}">采集仪编号</td>
+                    <td th:text="${item.netWorkId}" class="dict-value">4G模块ID</td>
+                    <td th:text="${item.installationSite}" class="dict-value">安装地点</td>
+                    <td th:text="${#dates.format(item.InstallationTime, 'yyyy-MM-dd HH:mm:ss')}">创建时间</td>
+                    <td th:text="${item.communicationProtocol}" class="dict-value">通讯协议</td>
+
+
+                    <td>
+                        <a class="open-popup" data-title="编辑采集仪" th:attr="data-url=@{'/system/acquisitionInstrument/edit/'+${item.id}}" data-size="764,360" href="#">编辑</a>
+                        <a class="open-popup" data-title="分配传感器" th:attr="data-url=@{'/system/acquisitionInstrument/detail/'+${item.id}}" data-size="800,680" href="#">分配传感器</a>
+                        <!--<a class="ajax-get" data-msg="您是否确认删除" th:href="@{/system/acquisitionInstrument/status/delete(ids=${item.id})}">删除</a>-->
+                        <a id="del" th:attr="data-id=@{${item.id}}">删除</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="/common/fragment :: page"></div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery;
+
+
+        $(document).on('click','#del',function(){
+            var id = $(this).attr("data-id");
+
+            /*var msg;*/
+            $.ajax({
+                url: "/system/acquisitionInstrument/findWorkSpotAcquisitionAndSensor" + "?id=" + id,
+                success: function (data) {
+
+
+                    layer.confirm(data.msg, {icon: 3, title:'提示'}, function(index){
+                        $.ajax({
+                            url: '/system/acquisitionInstrument/delete/'+id,
+                            success: function (result) {
+                                if (result.code ===200) {
+                                    layer.msg(result.msg, {offset: '15px', time: 3000, icon: 1});
+                                    location.reload();
+                                }else {
+                                    layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                                }
+                            }
+                        });
+
+
+
+                    });
+
+
+                    /*if (data.code == 200) {
+                        msg = data.msg;
+                    }*/
+                }
+            });
+        /*    layer.confirm('111111111111111111', {
+                btn: ['确定','取消'] //按钮
+            }, function(){
+                layer.msg('的确很重要', {icon: 2});
+            });
+*/
+
+
+
+
+
+           /* layer.confirm('您是如何看待前端开发？', {
+                btn: ['重要','奇葩'] //按钮
+            }, function(){
+                layer.msg('的确很重要', {icon: 1});
+            }, function(){
+                layer.msg('也可以这样', {
+                    time: 20000, //20s后自动关闭
+                    btn: ['明白了', '知道了']
+                });
+            });*/
+
+
+
+
+        });
+    });
+</script>
+</body>
+</html>

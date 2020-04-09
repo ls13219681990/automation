@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo" xmlns:>
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link rel="stylesheet" th:href="@{/lib/layui/css/layui.css}" media="all">
+</head>
+<body>
+<div class="timo-detail-page">
+    <input type="hidden" name="id" th:if="${measuringSpot}" th:value="${measuringSpot.id}" id="id"/>
+    <input type="hidden" name="min" th:if="${min}" th:value="${min}" id="id"/>
+    <input type="hidden" name="max" th:if="${max}" th:value="${max}" id="id"/>
+    <!--<div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 测点数据</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>-->
+    <div class="timo-detail-page">
+
+        <div class="layui-form-item">
+
+            <div class="layui-input-inline">
+                <input class="layui-input" id="startTime" name="startTime" autocomplete="off" placeholder="开始时间"
+                       lay-key="1" height="20px">
+            </div>
+            <div class="layui-input-inline">
+                <input class="layui-input" id="endTime" name="endTime" autocomplete="off" placeholder="结束时间" lay-key="2"
+                       height="20px">
+            </div>
+            <a class="layui-btn " id="submission" data-type="query" data-form="queryForm">导出</a>
+            <button class="layui-btn" data-title="图形数据" id="toEcharts"
+                    th:attr="data-url=@{/system/measuringSpot/toEcharts}" data-size="1000,600">
+                查看图形数据
+            </button>
+            <!-- <div class="pull-right screen-btn-group">
+
+               &lt;!&ndash;  <div class="layui-input-inline">
+                     <input class="layui-input" id="timeInterval" name="startTime" autocomplete="off" placeholder="时间区间"
+                            lay-key="3" height="20px">
+                 </div>&ndash;&gt;
+
+             </div>-->
+        </div>
+    </div>
+    <div id="echats"  style="margin:0 auto;width: 100%;height: 550px"></div>
+    <table id="acquisitionTable" lay-filter="acquisitionTable"></table>
+
+
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container">
+
+            <button class="layui-btn layui-btn-sm" lay-event="dataAlignment">数据对齐</button>
+            <button class="layui-btn layui-btn-sm" lay-event="btnRefresh"><i class="layui-icon">&#xe666;</i></button>
+
+            <!-- <button class="layui-btn open-popup" data-title="查看分组数据" lay-event="getCheckData"
+                     th:attr="data-url=@{'/system/measuringSpot/sensorGroupData?nodeName='+${nodeName}}"
+                     data-size="900,400">
+                 查看分组数据
+             </button>-->
+            <!--<button class="layui-btn layui-btn-small" id="exp" data-type="exp" lay-event="getCheckData">
+                <i class="layui-icon">&#xe61e;</i>导出Excel
+            </button>-->
+        </div>
+    </script>
+</div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script th:src="@{/lib/echarts/echarts.js}" charset="utf-8"></script>
+<script th:src="@{/lib/layui/layui.js}" charset="utf-8"></script>
+<script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery;
+        var data = layui.jquery('input[name= id]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+//执行渲染
+            table.render({
+                elem: '#acquisitionTable',
+                method: 'get',
+
+                defaultToolbar: [],
+                //height: 'full-50', //屏幕高度-合适的高度
+                page: true,
+
+                url: '/system/measuringSpot/sensorDatasGroup?nodeId=' + data,  //数据地址
+
+                limits: [10, 20, 50, 100, 200, 500, 1000],
+
+                toolbar: '#toolbarDemo',
+                cols:
+                    [
+                        [
+                            {type: 'checkbox'},
+                            /*         {field: '', type: 'numbers', title: '序号',},*/
+                            {field: 'measuringSpotSensorNo', title: '传感器编号', width: '24%', align: 'center', sort: true},
+                            {field: 'measuringSpotOriginalValue', title: '传感器读数', width: '24%', align: 'center', sort: true},
+                            {
+                                field: 'measuringSpotValue',
+                                title: '测点值',
+                                width: '8%',
+                                templet: '#measuringSpotValue',
+                                align: 'center', sort: true
+                            },
+                            {
+                                field: 'measuringSpotDifference',
+                                title: '变化量',
+                                width: '8%',
+                                templet: '#measuringSpotDifference',
+                                align: 'center'
+                            },
+                            {
+                                field: 'dayRateValue',
+                                title: '日变化速率',
+                                width: '8%',
+                                templet: '#dayRateValue',
+                                align: 'center'
+                            },
+                            {
+                                field: 'measuringSpotAccumulationValue',
+                                title: '累计变化量',
+                                width: '8%',
+                                templet: '#measuringSpotAccumulationValue',
+                                align: 'center'
+                            },
+                            {field: 'receiveTime', title: '接收时间', width: '16%', sort: 'true', align: 'center', sort: true}
+                        ]
+                    ], id: 'testReload', done: function (res) {
+                    tdTitle();
+                }
+            });
+
+
+            //头工具栏事件
+            table.on('toolbar(acquisitionTable)', function (obj) {
+                var id = layui.jquery('input[name= id]').val();
+                if (id === undefined || id === null || id === '' || id.length == 0) {
+                    layer.msg("数据异常");
+                } else {
+                    var checkStatus = table.checkStatus(obj.config.id);
+                    switch (obj.event) {
+                        case 'dataAlignment':
+                            var data = checkStatus.data;
+                            if (data.length <= 0) {
+                                layer.msg('请选择一条或者多条数据');
+                            } else {
+
+                                console.log(JSON.stringify(data));
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/system/measuringSpot/dataAlignment',
+                                    dataType: "JSON",
+                                    data: JSON.stringify(data),
+                                    contentType: "application/json;charset=UTF-8",
+                                    success: function (result) {
+                                        $.fn.Messager(result);
+                                    }
+                                });
+                                break
+                            }
+                        case 'btnRefresh':
+                            table.reload('testReload', {
+                                page: {
+                                    curr: 1 //重新从第 1 页开始
+                                }
+                            }, 'data');
+                            break;
+                    }
+                    ;
+                }
+            });
+        }
+    });
+</script>
+
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery,
+            laydate = layui.laydate,
+            measuringSpotId = $('#id').val();
+
+        var id = layui.jquery('input[name= id]').val();
+        var startTime = "";
+        var  endTime = "";
+        laydate.render({
+            id: "startTime",
+            elem: "#startTime",
+            min: layui.jquery('input[name= min]').val(),
+            max: layui.jquery('input[name= max]').val(),
+            value: layui.jquery('input[name= min]').val(),
+            isInitValue: false,
+            trigger: 'click',
+            done: function (value, date) {
+                startTime = value;
+            }
+        });
+        laydate.render({
+            id: "endTime",
+            elem: "#endTime",
+            max: layui.jquery('input[name= max]').val(),
+            min: layui.jquery('input[name= min]').val(),
+            value: layui.jquery('input[name= max]').val(),
+            isInitValue: false,
+            trigger: 'click',
+            done: function (value, date) {
+                endTime = value;
+            }
+        });
+        $(document).on('click', '#toEcharts', function () {
+            layer.open({
+                type: 2,
+                title: '测点折线图',
+                shadeClose: true,
+                maxmin: true,
+                area: ['1000px', '600px'],
+                content: ['/system/measuringSpot/toEcharts?id=' + id + '&startTime=' + startTime + '&endTime=' + endTime, 'no'] //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+            });
+            document.getElementById('startTime').value = ''
+            startTime ='';
+            document.getElementById('endTime').value = ''
+            endTime = '';
+        });
+        $(document).on('click', '#submission', function () {
+            if (measuringSpotId === undefined || measuringSpotId === null || measuringSpotId === '' || measuringSpotId.length == 0) {
+                layer.msg("数据异常");
+            } else {
+                    window.location.href = "exportExcel?measuringSpotId=" + measuringSpotId + '&startTime=' + startTime + '&endTime=' + endTime;
+            }
+            document.getElementById('startTime').value = ''
+            startTime ='';
+            document.getElementById('endTime').value = ''
+            endTime = '';
+        });
+    });
+
+</script>
+<script id="measuringSpotValue" type="text/html">
+    {{#  if(d.measuringSpotValue ==0){}}
+    0.00
+    {{#  } else { }}
+    {{d.measuringSpotValue}}
+    {{#  } }}
+</script>
+<script id="measuringSpotDifference" type="text/html">
+    {{#  if(d.measuringSpotDifference==0){}}
+    0.00
+    {{#  } else { }}
+    {{d.measuringSpotDifference}}
+    {{#  } }}
+</script>
+<script id="dayRateValue" type="text/html">
+    {{#  if(d.dayRateValue==0){}}
+    0.00
+    {{#  } else { }}
+    {{d.dayRateValue}}
+    {{#  } }}
+</script>
+<script id="measuringSpotAccumulationValue" type="text/html">
+    {{#  if(d.measuringSpotAccumulationValue==0){ }}
+    0.00
+    {{#  } else { }}
+    {{d.measuringSpotAccumulationValue}}
+    {{#  } }}
+</script>
+<script type="text/javascript">
+    var e = document.getElementById("echats");
+    var myChart = echarts.init(e);
+    var app = {};
+    option = null;
+    var data1 = [10, 20, 30, 40, 50, 60, 70, 80, 50, 100, 30, 130];
+    chart1();
+
+    function chart1() {
+        var id = document.getElementById('id').value;
+        console.log(id);
+        var startTime = document.getElementById('startTime').value;
+        var endTime = document.getElementById('endTime').value;
+        if (id === undefined || id === null || id === '' || id.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            $.get('/system/workSpot/echartsData?id=' + id, '&startTime=' + startTime + '&endTime=' + endTime, function (data) {
+                var y = [];
+                var title =[];
+                for (var key in data) {
+                    y.push(data[key]);
+                    title.push(key);
+                }
+                option = {
+                    title: {
+                        text: '测点数据折线图'
+                    },
+                    xAxis: {
+                        type: 'time',
+                    },
+                    grid: {//设置左边距和右边距
+                        left: '3%',
+                        right: '4%',
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    legend: {
+                        data: title
+                    },
+                    dataZoom: [{//添加放大缩小
+                        show: true
+                    }, {
+                        type: 'inside'
+                    }],
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    series: functionNodname(y,title),//引入方法创建折线
+                };
+                //实例化图表
+                if (option && typeof option === "object") {
+                    myChart.setOption(option, true);
+                }
+                ;
+            });
+        }
+        ;
+
+        //动态创建折线对象
+        function functionNodname(data,title) {
+            var series = []
+            for (var p = 0; p < data.length; p++) {
+                var xyData = [];
+                var arr = data[p];
+
+                for (var o = 0; arr.length > o; o++) {
+                    var coordinate = [];
+                    coordinate.push(arr[o].receiveTime);
+                    coordinate.push(arr[o].measuringSpotValue);
+                    xyData.push(coordinate)
+                }
+                var item = {
+                    name: title[p]+" ",
+                    type: 'line',
+                    data: xyData
+                }
+
+                series.push(item)
+            }
+            return series;
+        }
+    }
+</script>
+
+</body>
+</html>

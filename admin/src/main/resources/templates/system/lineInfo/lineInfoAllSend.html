@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <div class="layui-card-header timo-card-header">
+        <span><i class="fa fa-bars"></i> 所有线路</span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+        <div class="timo-table-wrap">
+            <table class="layui-table timo-table">
+                <thead>
+                <tr>
+                    <th class="sortable" data-field="name">线路名称</th>
+                    <th class="sortable" data-field="no">线路编码</th>
+                    <th class="sortable" data-field="startMileage">起始里程</th>
+                    <th class="sortable" data-field="endMileage">结束里程</th>
+                    <th class="sortable" data-field="buildCompany">建设单位</th>
+                    <th class="sortable" data-field="designCompany">设计单位</th>
+                    <th class="sortable" data-field="lineSurvey">线路概况</th>
+                    <th class="sortable" data-field="remarks">备注</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item:${list}">
+                    <td th:text="${item.name}">线路名称</td>
+                    <td th:text="${item.no}">线路编码</td>
+                    <td th:text="${item.startMileage}">起始里程</td>
+                    <td th:text="${item.endMileage}">结束里程</td>
+                    <td th:text="${item.buildCompany}">建设单位</td>
+                    <td th:text="${item.designCompany}">设计单位</td>
+                    <td th:text="${item.lineSurvey}">线路概况</td>
+                    <td th:text="${item.remarks}">备注</td>
+                    <td>
+                        <a class="open-popup" data-title="编辑线路"
+                           th:attr="data-url=@{'/system/menu/lineInfoedit/'+${item.id}}" data-size="814,400"
+                           href="#">编辑</a>
+                        <!--<a class="open-popup" data-title="详细信息" th:attr="data-url=@{'/system/acquisitionInstrument/detail/'+${item.id}}" data-size="800,600" href="#"><br /></a>-->
+                        <!--<a class="ajax-get" data-msg="您是否确认删除" th:href="@{/system/acquisitionInstrument/status/delete(ids=${item.id})}">删除</a>-->
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="/common/fragment :: page"></div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+</body>
+</html>

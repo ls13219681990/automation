@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+</head>
+<body>
+<div class="timo-detail-page">
+    <div class="timo-detail-title">基本信息</div>
+    <table class="layui-table timo-detail-table">
+        <tbody>
+        <tr>
+            <th width='100px'>工点Id</th>
+            <td th:text="${workData.id}"></td>
+            <th width='100px'>工点名称</th>
+            <td th:text="${workData.name}"></td>
+        </tr>
+        <tr>
+            <th width='100px'>工点编码</th>
+            <td th:text="${workData.No}"></td>
+
+        </tr>
+        <tr>
+            <th>起始里程</th>
+            <td th:text="${workData.startMileage}"></td>
+            <th>结束里程</th>
+            <td th:text="${workData.endMileage}"></td>
+        </tr>
+        <tr>
+            <th>工点类型</th>
+            <td th:text="${workData.workSpotType}"></td>
+            <th>工点概况</th>
+            <td th:text="${workData.workSpotSurvey}"></td>
+        </tr>
+
+        <tr>
+            <th>备注</th>
+            <td th:text="${workData.remarks}" colspan="4"></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+<script th:replace="/common/template :: script"></script>
+</body>
+</html>

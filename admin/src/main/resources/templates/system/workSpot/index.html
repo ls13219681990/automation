@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+
+        .layui-table-cell {
+            height: inherit;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-card">
+    <input type="hidden" name="nodeName" th:if="${workData}" th:value="${workData.name}"/>
+    <input type="hidden" name="workSpotId" th:if="${workData}" th:value="${workData.id}"/>
+    <input type="hidden" name="min" th:if="${min}" th:value="${min}"/>
+    <input type="hidden" name="max" th:if="${max}" th:value="${max}"/>
+    <div class="layui-card-header timo-card-header">
+        <i class="fa fa-bars"></i><span id="title" style="margin-left: 10px"></span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+
+    <div class="layui-card-body">
+
+            <form class="layui-form" >
+                <div class="layui-form-item">
+                    <div class="layui-input-inline">
+                        <input class="layui-input" id="startTime" name="startTime" autocomplete="off" placeholder="开始时间"
+                               lay-key="1">
+                    </div>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" id="endTime" name="endTime" autocomplete="off" placeholder="结束时间"
+                               lay-key="2">
+                    </div>
+                    <div class="layui-inline">
+                        <button id="search" class="layui-btn" lay-submit="" lay-filter="search"><i
+                                class="layui-icon"></i>
+                        </button>
+                    </div>
+                    <button class="layui-btn " id="submission" data-type="query" data-form="queryForm" style="margin-left: 580px">导出</button>
+                    <a class="layui-btn" data-title="图形数据" id="toEcharts" data-size="1000,600" style="margin-right: 100px">
+                        查看图形数据
+                    </a>
+
+                    <input type="radio" name="dateType" value="1" title="日" checked="" >
+                    <input type="radio" name="dateType" value="2" title="周">
+                    <input type="radio" name="dateType" value="3" title="月">
+                    <a class="layui-btn" th:attr="data-url=@{'/system/workSpot/editReport'}"
+                       id="editReport">编辑报告</a>
+                </div>
+
+            </form>
+
+
+
+        <table class="layui-table" id="workSpotData" lay-filter="workSpotData"></table>
+        <script id="titleTpl" type="text/html">
+            <a th:href="@{/system/measuringSpot/index?nodeName={{d.measuringSpotName}}}" id="brief">进入</a>
+        </script>
+    </div>
+</div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+            $ = layui.jquery,
+            laydate = layui.laydate;
+
+
+
+
+        var id = layui.jquery('input[name=workSpotId]').val();
+        var data = layui.jquery('input[name= nodeName]').val();
+        var startTime = "";
+        var endTime = "";
+
+
+
+
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            table.render({
+                elem: '#workSpotData',
+                method: 'get',
+                //屏幕高度-合适的高度
+                page: true,
+                loading: true,
+                cellMinWidth: 90, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+                autoSort: true,
+                maxWidth: 300,
+                url: '/system/workSpot/data?nodeName=' + data,  //数据地址
+                //page:true,
+                cols:
+                    [
+                        [
+                            {type: 'checkbox', fixed: 'left'},
+                            {field: 'measuringSpotName', title: '测点名称', width: '10%', align: 'center', sort: true},
+                            /*   {field: 'measuringSpotType', title: '测点类型'},*/
+                            {field: 'measuringSpotSensorNo', title: '传感器编号', width: '10%', align: 'center', sort: true},
+                            {
+                                field: 'measuringSpotOriginalValue',
+                                title: '传感器读数',
+                                width: '17%',
+                                align: 'center',
+                                sort: true
+                            },
+                            {field: 'measuringSpotValue', title: '测点值', width: '10%', align: 'center', sort: true},
+                            {field: 'measuringSpotDifference', title: '变化量', width: '10%', align: 'center', sort: true},
+                            /*{field: 'easurePattern', title: '测量模式',},*/
+                            {field: 'dayRateValue', title: '日变化速率', width: '10%', align: 'center', sort: true},
+                            {
+                                field: 'measuringSpotAccumulationValue',
+                                title: '累计变化量',
+                                width: '10%',
+                                align: 'center',
+                                sort: true
+                            },
+                            /*{field: 'value', title: '传感器编号',  fixed: 'left'},*/
+                            {field: 'receiveTime', title: '接收时间', width: '10%', align: 'center', sort: true},
+                            {field: '', title: '操作', width: '10%', templet: '#titleTpl', align: 'center'}
+                        ]
+                    ], id: 'workSpotData', done: function (res) {
+                    tdTitle();
+                }
+            });
+        }
+
+
+        $(document).on('click', '#submission', function () {
+            var measuringSpots = layui.table.checkStatus('workSpotData').data;
+            var measuringSpotArray = new Array();
+            Object.keys(measuringSpots).forEach(function (key) {
+                measuringSpotArray.push(measuringSpots[key].id)
+            });
+            window.location.href = "exportWorkSpotData?measuringSpotId=" + encodeURIComponent(measuringSpotArray) + '&workSpotId=' + id + '&startTime=' + startTime + '&endTime=' + endTime;
+            //清空时间
+            document.getElementById('startTime').value = ''
+            startTime = '';
+            document.getElementById('endTime').value = ''
+            endTime = '';
+            return false;
+        });
+
+        $.ajax({
+            url: "/system/workSpot/title?id=" + id,
+            success: function (value) {
+                document.getElementById("title").innerHTML = value.msg;
+            }
+        });
+
+
+        laydate.render({
+            id: "startTime",
+            elem: "#startTime",
+            min: layui.jquery('input[name= min]').val(),
+            max: layui.jquery('input[name= max]').val(),
+            value: layui.jquery('input[name= min]').val(),
+            isInitValue: false,
+            trigger: 'click',
+            done: function (value, date) {
+                startTime = value;
+            }
+        });
+        laydate.render({
+            id: "endTime",
+            elem: "#endTime",
+            max: layui.jquery('input[name= max]').val(),
+            min: layui.jquery('input[name= min]').val(),
+            value: layui.jquery('input[name= max]').val(),
+            isInitValue: false,
+            trigger: 'click',
+            done: function (value, date) {
+                endTime = value;
+            }
+        });
+
+        form.on('submit(search)', function (data) {
+            if ((id === undefined || id === null || id === '') && (startTime === undefined || startTime === null || startTime === '') && (endTime === undefined || endTime === null || endTime === '')) {
+                layer.msg('数据出错，请刷新页面再重试');
+                return;
+            } else {
+                table.reload('workSpotData', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {//这里传参 向后台
+                        startTime: startTime,
+                        endTime: endTime,
+                        id: id
+                        //可传多个参数到后台... ，分隔
+                    }
+                    , url: '/system/workSpot/findByWorkSpotIdAndStartDateAndEndDate'//后台做模糊搜索接口路径
+                    , method: 'post'
+                });
+            }
+            return false;//false：阻止表单跳转 true：表单跳转
+        })
+
+        $(document).on('click', '#toEcharts', function () {
+            var measuringSpots = layui.table.checkStatus('workSpotData').data;
+            if(measuringSpots != null){
+                var measuringSpotArray = new Array();
+                Object.keys(measuringSpots).forEach(function (key) {
+                    measuringSpotArray.push(measuringSpots[key].id)
+                });
+                layer.open({
+                    type: 2,
+                    title: '测点折线图',
+                    shadeClose: true,
+                    maxmin: true,
+                    area: ['1000px', '600px'],
+                    content: ['/system/workSpot/toEcharts?measuringSpotId=' + encodeURIComponent(measuringSpotArray) + '&workSpotId=' + id + '&startTime=' + startTime + '&endTime=' + endTime, 'no'] //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                });
+                document.getElementById('startTime').value = ''
+                startTime = '';
+                document.getElementById('endTime').value = ''
+                endTime = '';
+            }
+            return false;
+        });
+
+        $(document).on('click', "#editReport", function () {
+            var dateType = $('input[name="dateType"]:checked').val();
+            var url = $(this).attr("data-url");
+            layer.open({
+                type: 2,
+                title: '',
+                shadeClose: true,
+                maxmin: true,
+
+                area: ['95%', '95%'],
+                /* content: '/system/report/measuringSpotTree' //这里content是一个普通的String*/
+                content: [url + '?id=' + id+'&dateType='+dateType]
+            });
+        });
+
+    });
+
+</script>
+</body>
+</html>

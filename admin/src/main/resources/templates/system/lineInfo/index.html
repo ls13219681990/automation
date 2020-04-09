@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <style>
+        .dict-value {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="timo-layout-page">
+<div class="layui-card">
+    <input type="hidden" name="lineInfoId" th:if="${lineInfo}" th:value="${lineInfo.id}"/>
+    <div class="layui-card-header timo-card-header">
+        <i class="fa fa-bars"></i><span id="title" style="margin-left: 10px"></span>
+        <i class="layui-icon layui-icon-refresh refresh-btn"></i>
+    </div>
+    <div class="layui-card-body">
+
+        <div class="timo-detail-page">
+            <table class="layui-table" id="userLineData" lay-filter="userLineData"></table>
+
+            <script id="titleTpl" type="text/html">
+                <a class="open-popup" data-title="导出标段数据"
+                   th:attr="data-url=@{'/system/bidSection/toExportExcel?bidSectionId={{d.id}}'}" data-size="640,390">导出数据</a>
+                <a data-title="进入" th:href="@{'/system/bidSection/index?nodeName={{d.name}}'}">进入</a>
+
+                <!-- <a class="open-popup" data-title="编辑线路"
+                    th:attr="data-url=@{'/system/menu/lineInfoedit/{{d.id}}'}" data-size="814,400" href="#">编辑</a>-->
+            </script>
+        </div>
+    </div>
+</div>
+<script th:replace="/common/template :: script"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            table = layui.table,
+
+            $ = layui.jquery;
+
+
+        var lineInfoId = layui.jquery('input[name= lineInfoId]').val();
+
+        table.render({
+                elem: '#userLineData',
+                method: 'get',
+                page: true,
+                loading: true,
+                url: '/system/bidSection/userBidSectionData?lineInfoId=' + lineInfoId,  //数据地址
+                page: true,
+                maxWidth: 300,
+                cols:
+                    [
+                        [
+                            {field: 'name', title: '标段名称', width: '14%', align: 'center', sort: true},
+                            {field: 'no', title: '标段编码', width: '14%', align: 'center', sort: true},
+                            {field: 'designCompany', title: '施工单位', width: '14%', align: 'center', sort: true},
+                            /*{field: 'easurePattern', title: '测量模式',},*/
+                            {field: 'constructionCompany', title: '设计单位', width: '14%', align: 'center', sort: true},
+                            {field: 'supervisorCompany', title: '监理单位', width: '14%', align: 'center', sort: true},
+                            {field: 'bidSectionSurvey', title: '合同段概况', width: '14%', align: 'center'},
+                            {field: 'remarks', title: '备注', width: '16%', align: 'center'},
+                            {
+                                field: 'title',
+                                title: '操作',
+                                width: '170',
+                                templet: '#titleTpl',
+                                fixed: 'right',
+                                align: 'center'
+                            }
+                        ]
+                    ], id: 'userLineData', done: function (res) {
+                    tdTitle();
+                }
+            }
+        );
+    });
+</script>
+</body>
+</html>

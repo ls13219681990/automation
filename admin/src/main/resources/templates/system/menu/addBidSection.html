@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+    <head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+
+        <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+        <style>
+            .layui-input-style {
+                height: 38px;
+                line-height: 1.3;
+                line-height: 38px \9;
+                border-width: 1px;
+                border-style: solid;
+                background-color: #fff;
+                border-radius: 2px;
+                width: 44%;
+                padding-left: 10px;
+            }
+        </style>
+        <style>
+            .layui-input-style-edit {
+                height: 38px;
+                line-height: 1.3;
+                line-height: 38px \9;
+                border-width: 1px;
+                border-style: solid;
+                background-color: #fff;
+                border-radius: 2px;
+                width: 44%;
+                padding-left: 10px;
+            }
+            .layui-input-remake {
+                height: 38px;
+                line-height: 1.3;
+                line-height: 38px \9;
+                border-width: 1px;
+                border-style: solid;
+                background-color: #fff;
+                border-radius: 2px;
+                display: block;
+                width: 245%;
+                padding-left: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="layui-form timo-compile">
+            <form th:action="@{/system/menu/saveBidSection}">
+                <input type="hidden" name="tree" id="tree" th:if="${tree}" th:value="${tree}"/>
+                <input type="hidden" name="pid" th:if="${pMenu}" th:value="${pMenu.id}"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label required">标段名称</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="name" >
+                    </div>
+                    <label class="layui-form-label required ">标段编码</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input-style" type="text" name="no" th:value="${no}" style="cursor:not-allowed" disabled>
+                        <input class="layui-input-style-edit" type="text" name="editNo">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">起始里程</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="startMileage" >
+                    </div>
+                    <label class="layui-form-label ">结束里程</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="endMileage" >
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">设计单位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="designCompany" >
+                    </div>
+                    <label class="layui-form-label ">施工单位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="constructionCompany" >
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+
+                    <label class="layui-form-label ">监理单位</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="supervisorCompany" >
+                    </div>
+                    <label class="layui-form-label ">合同段概况</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" type="text" name="bidSectionSurvey" >
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">备注</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input-remake" type="text" name="remarks">
+                    </div>
+                </div>
+
+
+                <div class="layui-form-item timo-finally">
+                    <button class="layui-btn " lay-submit="" lay-filter="SubmitParentParent">
+                        <i class="fa fa-check-circle"></i>
+                        保存
+                    </button>
+                    <button class="layui-btn btn-secondary close-popup">
+                        <i class="fa fa-times-circle"></i>
+                        关闭
+                    </button>
+                </div>
+            </form>
+        </div>
+        <script th:replace="/common/template :: script"></script>
+        <script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+        <script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+        <script type="text/javascript" th:src="@{/js/addMenu.js}"></script>
+    </body>
+</html>

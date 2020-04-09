@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/lib/zTree_v3/css/zTreeStyle/zTreeStyle.css}" type="text/css">
+</head>
+<body>
+<div class="layui-form timo-compile">
+    <form th:action="@{/system/menu/saveBidSection}">
+
+        <input type="hidden" name="pid" th:if="${pMenu}" th:value="${pMenu.pid}"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">开始时间</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="startDate" placeholder="yyyy-MM-dd">
+            </div>
+            <label class="layui-form-label required">结束时间</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="EndDate" placeholder="yyyy-MM-dd">
+            </div>
+        </div>
+        <div class="layui-form-item">
+
+        </div>
+
+        <div class="layui-form-item timo-finally">
+            <button class="layui-btn" id="submission"><i class="fa fa-check-circle"></i>确定</button>
+            <button class="layui-btn btn-secondary close-popup"><i class="fa fa-times-circle"></i> 关闭</button>
+        </div>
+    </form>
+</div>
+<script th:replace="/common/template :: script"></script>
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/lib/zTree_v3/js/jquery.ztree.core.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/timoTree.js}"></script>
+<script type="text/javascript" th:src="@{/js/addMenu.js}"></script>
+
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery;
+        $(function () {
+            $("#daochule").click(function () {
+                window.location.href = "exportHttp";
+            })
+        })
+        var data = layui.jquery('input[name= id]').val();
+        if (data === undefined || data === null || data === '' || data.length == 0) {
+            layer.msg("数据异常");
+        } else {
+            $(document).on('click', '#submission', function () {
+                $.ajax({
+                    url: '/system/measuringSpot/exportExcel',
+                    success: function (result) {
+                        if (result.data == null) {
+                            result.data = 'submit[refresh]';
+                        }
+                        $.fn.Messager(result);
+                    }
+                });
+            });
+        }
+    });
+</script>
+<script>
+    layui.use(['form', 'laydate', 'laydate', 'element', 'jquery'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            element = layui.element,
+            $ = layui.jquery,
+            laydate = layui.laydate;
+
+        laydate.render({
+            elem: '#startDate'
+            , type: 'datetime'
+        });
+        laydate.render({
+            elem: '#EndDate'
+            , type: 'datetime'
+        });
+        $(function () {
+            $("#daochule").click(function () {
+                window.location.href = "exportHttp";
+            })
+        })
+    });
+</script>
+
+
+</body>
+</html>

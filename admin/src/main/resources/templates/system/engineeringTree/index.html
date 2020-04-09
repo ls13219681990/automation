@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<!--<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:mo="https://gitee.com/aun/Timo">-->
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:replace="/common/template :: header(~{::title},~{::link},~{::style})">
+    <link rel="stylesheet" th:href="@{/layui2.55/css/layui.css}" media="all">
+    <style>
+        .layui-col-sm10 {
+            width: 83.33333333%;
+            height: 100%;
+        }
+
+        .layui-col-lg10 {
+            width: 83.33333333%;
+            height: 100%;
+        }
+
+        .ztree * {
+            font-size: 15px;
+        }
+
+        .iframe-style {
+            margin-left: 2px;
+            /*height: 95%;*/
+            /*margin-right: 10px;*/
+            /* margin-bottom:20px;*/
+            /* width: 83.33333333%*/
+        }
+
+        .timo-layout-page {
+            background-color: #eeeeee;
+            padding: 18px;
+            height: 95%;
+            /*width: 100%;*/
+        }
+    </style>
+</head>
+
+<body class="timo-layout-page">
+<div class="layui-card timo-tree" th:attr="data-url=@{'/system/menu/lineTree?'+${search}}">
+    <div class="layui-card-body layui-row">
+        <div class="layui-col-lg2 layui-col-sm2">
+            <div class="layui-card timo-nav-tree">
+                <button class="layui-btn add-line" data-title="添加线路" style="margin-left: 20px;margin-top: 10px" shiro:hasPermission="system:menu:addLineInfo"
+                        data-size="760,510" data-url="/system/menu/addLineInfo"><i class="fa fa-plus"></i>添加线路
+                </button>
+                <button class="layui-btn lineAll" data-title="所有线路" style="margin-left: 10px;margin-top: 10px"
+                        th:attr="data-url=@{'/system/lineInfo/lineInfoAll'}" data-size="760,510">所有线路
+                </button>
+
+                    <input type="text" class="layui-input" style="margin-left: 15px;width:80%;margin-top: 6px"  name="searchTree"/>
+
+                <div id="projectTree" class="demo-tree demo-tree-box" style="margin-left: 15px"></div>
+            </div>
+        </div>
+        <div class="layui-col-lg10 layui-col-sm10">
+            <div class="iframe-style">
+                <iframe src="/system/lineInfo/lineInfoAll" id="iframe" name="iframe"
+                        style="width: 100%;min-height:655px;height:95%;margin-top: 6px;"
+                        frameborder=0 scrolling=no width="100%"></iframe>
+            </div>
+            <!-- <iframe id="iframe" src="/system/lineInfo/lineInfoAll" style="margin-top: 6px;"
+                     frameborder="0" scrolling="auto"></iframe>-->
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" th:src="@{/js/plugins/jquery-3.3.1.min.js}"></script>
+<script th:src="@{/layui2.55/layui.js}" charset="utf-8"></script>
+<script>
+    layui.use(['tree', 'layer'], function () {
+        var layer = layui.layer
+            , $ = layui.jquery
+            , tree = layui.tree;
+
+        // 同步(绑定)layui的tree的搜索(过滤)框
+        // treeId: tree所在的容器的id
+        // filter: 对应的搜索框的selector或者dom对象,尽量要确保是唯一的节点，或者真的是要控制这个树的input
+        // callback: 回调 参数(树节点jquery对象, 输入框对象, 匹配到的节点数量)
+        //function syncLayuiTreeFilter(treeId, filter, callback){
+        tree.syncLayuiTreeFilter = function syncLayuiTreeFilter(treeId, filter, callback) {
+            var treeElem = $('#' + treeId), filterElem = $(filter);
+            if (!filterElem.length || !filterElem.length) {
+                return;
+            }
+            filterElem.unbind('change').change(function (event) {
+                var that = this;
+                var value = $(that).val().trim();
+                var HIDE = 'layui-hide';
+                var hintClass = 'search_hit';
+                // 先恢复现场
+                treeElem.find('.' + HIDE).removeClass(HIDE);
+                treeElem.find('.' + hintClass).removeClass(hintClass).each(function (index, item) {
+                    item = $(item);
+                    item.html(item.data('textOld')).data('textOld', null);
+                });
+                // 如果有值筛选开始
+                if (value) {
+                    layui.each(treeElem.find('.layui-tree-entry'), function (index, treeElem) {
+                        var elem = $(treeElem);
+                        var textTemp = elem.text();
+
+                        if (textTemp.indexOf(value) === -1) {
+                            // 不存在就隐藏
+                            elem.closest('div').addClass(HIDE);
+                        } else {
+                            // 命中就添加一个class
+                            elem.find('.layui-tree-txt').addClass(hintClass)
+                                .data('textOld', textTemp)
+                                .html(textTemp.replace(new RegExp(value, 'g'), '<span class="search_hint_text">' + value + '</span>'));
+                        }
+                    });
+
+                    layui.each(treeElem.find('.' + hintClass), function (index, treeElem) {
+                        var elem = $(treeElem);
+                        var parentElem = elem.parents('div').parent('div').prev();
+                        //展示父节点
+                        parentElem.removeClass(HIDE);
+                        //展示子节点     //在搜索值为中间级别的时候，搜索结果会导致叶子节点的图标变成"+"，未解决
+                        //elem.parents('div').parent('div').next().children('div').children('div').siblings().removeClass(HIDE);
+
+                        //将节点展开
+                        if (parentElem.find(".layui-icon-addition")) {
+                            console.log(parentElem.find(".layui-icon-addition"));
+                            parentElem.find(".layui-icon-addition").click();
+                        }
+
+                    });
+                }
+                typeof callback === 'function' && callback.call(that, treeElem, filterElem, treeElem.find('.' + hintClass).length);
+            });
+        };
+
+
+        $.ajax({
+            url: "/system/menu/reportLineTree",
+            success: function (data) {
+                tree.render({
+                    elem: '#projectTree'
+                    , data: data.data
+                    , id: 'projectTree'
+                    , customOperate: true
+                    , edit: ['add', 'update', 'del']
+                    , click: function (obj) {
+                        var type = obj.type;//得到当前节点类型
+                        var data = obj.data;//得到当前节点数据
+                        var elem = obj.elem;//得到当前节点元素
+                        var id = data.id;//得到节点索引
+                        var parentId = data.parentId;//父节点
+
+                        var url = data.url.substring(0, data.url.indexOf("="));//截取字符串
+                        document.getElementById("iframe").src = url + "=" + data.title;
+
+                        //"/system/lineInfo/indexManage?nodeName"
+
+
+                    }, operate: function (obj) {//节点操作
+                        var type = obj.type;//得到当前节点类型
+                        var data = obj.data;//得到当前节点数据
+                        var elem = obj.elem;//得到当前节点元素
+                        var id = data.id;//得到节点索引
+                        var parentId = data.parentId;//父节点
+
+
+                        if (type == 'add') {
+                            if (data.url.indexOf("lineInfo") != -1) {//添加标段
+                                window.layerIndex = layer.open({
+                                    type: 2,
+                                    title: '添加标段',
+                                    shadeClose: true,
+                                    maxmin: true,
+                                    area: ['770px', '425px'],
+                                    content: ["/system/menu/addBidSection" + '?id=' + id + '&tree=true', 'on']
+                                });
+                            } else if (data.url.indexOf("bidSection") != -1) {//添加工点
+                                window.layerIndex = layer.open({
+                                    type: 2,
+                                    title: '添加工点',
+                                    shadeClose: true,
+                                    maxmin: true,
+                                    area: ['770px', '340px'],
+                                    content: ["/system/menu/addWorkSpot" + '?id=' + id + '&tree=true', 'on']
+                                });
+                            } else {//添加测点
+                                window.layerIndex = layer.open({
+                                    type: 2,
+                                    title: '添加测点',
+                                    shadeClose: true,
+                                    maxmin: true,
+                                    area: ['1130px', '540px'],
+                                    content: ["/system/menu/addMeasuringSpot" + '?id=' + id + '&tree=true', 'on']
+                                });
+                            }
+
+                        } else if (type == 'update') {
+                            if (data.url.indexOf("lineInfo") != -1) {//编辑标段
+                                window.layerIndex = layer.open({
+                                    type: 2,
+                                    title: '编辑线路',
+                                    shadeClose: true,
+                                    maxmin: true,
+                                    area: ['814px', '400px'],
+                                    content: ["/system/menu/lineInfoedit?id=" + id + '&tree=true', 'on']
+                                });
+                            } else if (data.url.indexOf("bidSection") != -1) {//编辑工点
+                                window.layerIndex = layer.open({
+                                    type: 2,
+                                    title: '编辑标段',
+                                    shadeClose: true,
+                                    maxmin: true,
+                                    area: ['814px', '450px'],
+                                    content: ["/system/menu/bidSectionEdit" + '?id=' + id + '&tree=true', 'on']
+                                });
+                            } else if (data.url.indexOf("workSpot") != -1) {//编辑工点
+                                window.layerIndex = layer.open({
+                                    type: 2,
+                                    title: '编辑工点',
+                                    shadeClose: true,
+                                    maxmin: true,
+                                    area: ['814px', '400px'],
+                                    content: ["/system/menu/workSpotEdit" + '?id=' + id + '&tree=true', 'on']
+                                });
+                            }
+                        } else {//删除
+                            $.ajax({
+                                url: '/system/menu/delTree?id=' + id,
+                                success: function (result) {
+                                    if (result.code === 200) {
+                                        layer.msg(result.msg, {
+                                            icon: 1,
+                                            time: 3000,
+                                            end: function () {
+                                                location.reload();
+                                            }
+                                        });
+                                    } else {
+                                        layer.msg(result.msg, {offset: '15px', time: 3000, icon: 2});
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+
+        $(document).on("click", ".lineAll", function () {
+            var url = $(this).attr("data-url");
+            document.getElementById("iframe").src = url;
+
+        });
+
+
+        /* 添加/修改弹出层 */
+        $(document).on("click", ".add-line", function () {
+
+            var title = $(this).attr("data-title");
+            var url = $(this).attr("data-url");
+            var size = $(this).attr("data-size");
+
+            var popup = $(this);
+            var Arrkey, reg = /^jQuery[0-9]\d*$/
+            for (var key in popup[0]) {
+                if (reg.test(key)) {
+                    Arrkey = key
+                }
+            }
+            if (Arrkey != undefined && Arrkey != null) {
+                delete popup[0][Arrkey].title;
+                delete popup[0][Arrkey].url;
+            }
+
+            if (size === undefined || size === "auto") {
+                size = ['50%', '80%'];
+            } else if (size === "max") {
+                size = ['100%', '100%'];
+            } else if (size.indexOf(',') !== -1) {
+                var split = size.split(",");
+                size = [split[0] + 'px', split[1] + 'px'];
+            }
+            window.layerIndex = layer.open({
+                type: 2,
+                title: title,
+                shadeClose: true,
+                maxmin: true,
+                area: size,
+                content: [url, 'on']
+            });
+        });
+
+
+        tree.syncLayuiTreeFilter('projectTree', '[name="searchTree"]', function (treeElem, filterElem, hitNumbers) {
+        });
+    });
+</script>
+</body>
+</html>
